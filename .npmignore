@@ -1,0 +1,7 @@
+#tests
+test
+coverage
+
+#build tools
+.travis.yml
+.eslintrc.js
