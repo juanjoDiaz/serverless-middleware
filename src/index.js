@@ -28,10 +28,10 @@ class Middleware {
     this.provider = this.serverless.getProvider('aws');
 
     this.hooks = {
-      'after:package:initialize': this.afterPackageInitialize.bind(this),
-      'after:package:createDeploymentArtifacts': this.afterCreateDeploymentArtifacts.bind(this),
-      'before:offline:start:init': this.afterPackageInitialize.bind(this),
-      'before:offline:start:end': this.afterCreateDeploymentArtifacts.bind(this),
+      'after:package:initialize': this.processHandlers.bind(this),
+      'after:package:createDeploymentArtifacts': this.clearResources.bind(this),
+      'before:offline:start:init': this.processHandlers.bind(this),
+      'before:offline:start:end': this.clearResources.bind(this),
     };
   }
 
@@ -43,7 +43,7 @@ class Middleware {
    *
    * @return {Promise}
    * */
-  async afterPackageInitialize() {
+  async processHandlers() {
     this.middlewareOpts = this.middlewareOpts || this.configPlugin(this.serverless.service);
     await Promise.all(
       this.serverless.service.getAllFunctions()
@@ -79,7 +79,7 @@ class Middleware {
    *
    * @return {Promise}
    * */
-  async afterCreateDeploymentArtifacts() {
+  async clearResources() {
     this.middlewareOpts = this.middlewareOpts || this.configPlugin(this.serverless.service);
     if (this.middlewareOpts.cleanFolder) {
       await fs.remove(this.middlewareOpts.pathFolder);
