@@ -1,13 +1,22 @@
 language: node_js
 node_js:
-  - "7"
-  - "8"
-  - "9"
-  - "10"
-  - "11"
+  - '7'
+  - '8'
+  - '9'
+  - '10'
+  - '11'
 script:
-  - "npm run lint"
-  - "npm run test-with-coverage"
+  - npm run lint
+  - npm run test-with-coverage
 after_success:
-  - "npm run coveralls"
+  - npm run coveralls
 sudo: false
+deploy:
+  provider: npm
+  email: juanjo.diazmo@gmail.com
+  api_key:
+    secure: ADHUP6vqFX46PkX5hNGQ6rQL17vXIR2xAJOXLfVDxI9uVnPNjH5xlem3U7hRfOnMGKrMSGOTyYOGmGao/iq8QYprIAILCZxSnVsJxauzE48vpRLneLJoP39N2nRBS27UoOhbU0mWoL7HdoCu8ySMVRs7/2WNfMXQqd9tEfY4/5QlV68FtZuK1Bav4+KMCKpxUar0wxsf52JLwKXUfyLvzXjRDDrzfpFXrgcC0GXByTXPMYx4deB/szBwwxPtC0M9YHlEuCXLOp9hXr10FjSyHxStsDU8s+JyNz5DMFA+B/uaO60O11xquI/qDeV/UtZ6dWVL8K5UNtriapZix4jqnujtjMeALi/JOdC0XJf6nImhq5pthkyegThZYGESVeaUUtAt6pROstfkvxqWcJs1BNPl+zMX733Szw3G6NRJ+gGwtqZVEmA5zavKSve1G0B27PlgfSrSjx5VVPi1K4OBObQodcbOssC448tjAJcuEu04FJ5epS9RmmFnGe3Bjl2eagATUpOlH8SR/8V9a7MfBs96PiUTgqdzDA7D2wPP7x4LYKo7TykL9ZBdWeSL7up06zZbTFe1G68JdpsFxL4JWYavEi+x6zRyB3Pwbs+75MW1I9WarKS0glE2zjL3NStTOgv4llcu4Td7ppU7cjDn9ybPVPr3cd4IgZO4csFTd8M=
+  on:
+    branch: master
+    tags: true
+    repo: juanjoDiaz/serverless-middleware
