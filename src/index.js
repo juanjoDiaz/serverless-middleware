@@ -30,6 +30,8 @@ class Middleware {
     this.hooks = {
       'after:package:initialize': this.afterPackageInitialize.bind(this),
       'after:package:createDeploymentArtifacts': this.afterCreateDeploymentArtifacts.bind(this),
+      'before:offline:start:init': this.afterPackageInitialize.bind(this),
+      'before:offline:start:end': this.afterCreateDeploymentArtifacts.bind(this),
     };
   }
 
