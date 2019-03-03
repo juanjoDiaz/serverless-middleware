@@ -5,12 +5,13 @@ class GeneratedFunctionTester {
 
   get middlewareFunction() {
     return new Function('event', 'context', 'dependencies', `
-      const require = (dep) => {
-        if (!dependencies[dep]) {
+      const require = (dependencyName) => {
+        const dependency = dependencies[dependencyName.replace('../', '')];
+        if (!dependency) {
           throw new Error(\`Unknow dependency (\${dep})\`);
         }
 
-        return dependencies[dep];
+        return dependency;
       };
       const module = { exports: {} };
       ${this.func}

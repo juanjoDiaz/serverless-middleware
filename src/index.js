@@ -59,7 +59,11 @@ class Middleware {
             .concat(this.middlewareOpts.pos);
           this.serverless.cli.log(`Middleware: setting ${handlers.length} middlewares ${name}`);
           const handlerPath = `${this.middlewareOpts.pathFolder}/${name}`;
-          await fs.outputFile(handlerPath, Middleware.createMiddlewareHandler(handlers));
+          const handler = Middleware.createMiddlewareHandler(
+            handlers,
+            this.middlewareOpts.pathToRoot,
+          );
+          await fs.outputFile(handlerPath, handler);
           fn.handler = `${this.middlewareOpts.folderName}/${name}.handler`;
         }),
     );
@@ -96,10 +100,12 @@ class Middleware {
     const config = (service.custom && service.custom.middleware) || {};
     const folderName = (typeof config.folderName === 'string') ? config.folderName : defaultOpts.folderName;
     const pathFolder = path.join(this.serverless.config.servicePath, folderName);
+    const pathToRoot = path.relative(pathFolder, this.serverless.config.servicePath);
 
     return {
       folderName,
       pathFolder,
+      pathToRoot,
       cleanFolder: (typeof config.cleanFolder === 'boolean') ? config.cleanFolder : defaultOpts.cleanFolder,
       pre: Array.isArray(config.pre) ? config.pre : defaultOpts.pre,
       pos: Array.isArray(config.pos) ? config.pos : defaultOpts.pos,
@@ -116,7 +122,7 @@ class Middleware {
    *
    * @return {Promise}
    * */
-  static createMiddlewareHandler(handlers) {
+  static createMiddlewareHandler(handlers, pathToRoot = '.') {
     return `'use strict';
     
 const handlers = ${JSON.stringify(handlers)};
@@ -128,7 +134,7 @@ module.exports.handler = async (event, context) => {
     if (end) return prev;
     context.prev = prev;
     const [module, fn] = handler.split(/\\.(?=[^\\.]+$)/);
-    return require(module)[fn](event, context);
+    return require(\`${pathToRoot}/\${module}\`)[fn](event, context);
   };
 
   return handlers
