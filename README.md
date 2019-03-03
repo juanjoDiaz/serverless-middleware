@@ -58,7 +58,7 @@ functions:
       - then: myFunction.handler # `then:` is unnecesary here.
       - catch: utils.handlerError
       - # or both can be combined
-        then: logger.log # `then:` is unnecesary here.
+        then: logger.log
         catch: utils.handlerLoggerError
 ```
 
