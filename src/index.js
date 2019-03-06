@@ -22,13 +22,9 @@ class Middleware {
    * @constructor
    *
    * @param {!Object} serverless - Serverless object
-   * @param {!Object} options - Serverless options
    * */
-  constructor(serverless, options) {
+  constructor(serverless) {
     this.serverless = serverless;
-    this.options = options;
-
-    this.provider = this.serverless.getProvider('aws');
 
     this.hooks = {
       'after:package:initialize': this.processHandlers.bind(this),
