@@ -8,6 +8,7 @@ const { GeneratedFunctionTester } = require('./utils/generatedFunctionTester');
 const { shouldHaveBeenCalledInOrder } = require('./utils/jest');
 
 fs.outputFile.mockReturnValue(Promise.resolve());
+fs.existsSync.mockImplementation(path => path.endsWith('.ts'));
 
 describe('Serverless middleware after:package:initialize hook', () => {
   beforeEach(() => fs.outputFile.mockClear());
@@ -19,7 +20,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
           functions: {
             someFunc1: {
               name: 'someFunc1',
-              handler: ['middleware1.handler', 'middleware2.handler', 'someFunc1.handler'],
+              handler: [{ then: 'middleware1.handler' }, 'middleware2.handler', 'someFunc1.handler'],
             },
             someFunc2: {
               name: 'someFunc2',
@@ -35,7 +36,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
       expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('_middleware/someFunc1.handler');
       expect(plugin.serverless.service.functions.someFunc2.handler).toEqual('someFunc2.handler');
       expect(fs.outputFile).toHaveBeenCalledTimes(1);
-      expect(fs.outputFile.mock.calls[0][0]).toEqual('testPath/_middleware/someFunc1');
+      expect(fs.outputFile.mock.calls[0][0]).toEqual('testPath/_middleware/someFunc1.ts');
 
       const event = {};
       const context = {};
@@ -45,15 +46,19 @@ describe('Serverless middleware after:package:initialize hook', () => {
         someFunc1: { handler: jest.fn().mockImplementation(() => Promise.resolve()) },
       };
 
-      const functionTester = new GeneratedFunctionTester(fs.outputFile.mock.calls[0][1]);
+      const functionTester = GeneratedFunctionTester
+        .fromTypeScript(fs.outputFile.mock.calls[0][1]);
       await functionTester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.middleware1.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.middleware1.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.middleware1.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.middleware2.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.middleware2.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.middleware2.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.someFunc1.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.someFunc1.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.someFunc1.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
 
       shouldHaveBeenCalledInOrder([
         middlewares.middleware1.handler,
@@ -69,7 +74,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
             someFunc1: {
               name: 'someFunc1',
               handler: [
-                'middleware1.handler',
+                { then: 'middleware1.handler' },
                 { then: 'middleware2.handler', catch: 'catchMiddleware1.handler' },
                 'middleware3.handler',
                 { catch: 'catchMiddleware2.handler' },
@@ -90,7 +95,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
       expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('_middleware/someFunc1.handler');
       expect(plugin.serverless.service.functions.someFunc2.handler).toEqual('someFunc2.handler');
       expect(fs.outputFile).toHaveBeenCalledTimes(1);
-      expect(fs.outputFile.mock.calls[0][0]).toEqual('testPath/_middleware/someFunc1');
+      expect(fs.outputFile.mock.calls[0][0]).toEqual('testPath/_middleware/someFunc1.ts');
 
       const event = {};
       const context = {};
@@ -109,20 +114,26 @@ describe('Serverless middleware after:package:initialize hook', () => {
         someFunc1: { handler: jest.fn().mockImplementation(() => Promise.resolve()) },
       };
 
-      const functionTester = new GeneratedFunctionTester(fs.outputFile.mock.calls[0][1]);
+      const functionTester = GeneratedFunctionTester
+        .fromTypeScript(fs.outputFile.mock.calls[0][1]);
       await functionTester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.middleware1.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.middleware1.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.middleware1.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.middleware2.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.middleware2.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.middleware2.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.catchMiddleware1.handler).not.toHaveBeenCalled();
       expect(middlewares.middleware3.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.middleware3.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.middleware3.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.catchMiddleware2.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.catchMiddleware2.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.catchMiddleware2.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.someFunc1.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.someFunc1.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.someFunc1.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
 
       shouldHaveBeenCalledInOrder([
         middlewares.middleware1.handler,
@@ -140,7 +151,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
             someFunc1: {
               name: 'someFunc1',
               handler: [
-                'middleware1.handler',
+                { then: 'middleware1.handler' },
                 { then: 'middleware2.handler', catch: 'catchMiddleware1.handler' },
                 'middleware3.handler',
                 { catch: 'catchMiddleware2.handler' },
@@ -161,7 +172,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
       expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('_middleware/someFunc1.handler');
       expect(plugin.serverless.service.functions.someFunc2.handler).toEqual('someFunc2.handler');
       expect(fs.outputFile).toHaveBeenCalledTimes(1);
-      expect(fs.outputFile.mock.calls[0][0]).toEqual('testPath/_middleware/someFunc1');
+      expect(fs.outputFile.mock.calls[0][0]).toEqual('testPath/_middleware/someFunc1.ts');
 
       const event = {};
       const context = {};
@@ -180,13 +191,16 @@ describe('Serverless middleware after:package:initialize hook', () => {
         someFunc1: { handler: jest.fn().mockImplementation(() => Promise.resolve()) },
       };
 
-      const functionTester = new GeneratedFunctionTester(fs.outputFile.mock.calls[0][1]);
+      const functionTester = GeneratedFunctionTester
+        .fromTypeScript(fs.outputFile.mock.calls[0][1]);
       await functionTester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.middleware1.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.middleware1.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.middleware1.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.middleware2.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.middleware2.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.middleware2.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.catchMiddleware1.handler).not.toHaveBeenCalled();
       expect(middlewares.middleware3.handler).not.toHaveBeenCalled();
       expect(middlewares.catchMiddleware2.handler).not.toHaveBeenCalled();
@@ -211,7 +225,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
           functions: {
             someFunc1: {
               name: 'someFunc1',
-              handler: ['middleware1.handler', 'middleware2.handler', 'someFunc1.handler'],
+              handler: [{ then: 'middleware1.handler' }, 'middleware2.handler', 'someFunc1.handler'],
             },
             someFunc2: {
               name: 'someFunc2',
@@ -227,8 +241,8 @@ describe('Serverless middleware after:package:initialize hook', () => {
       expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('_middleware/someFunc1.handler');
       expect(plugin.serverless.service.functions.someFunc2.handler).toEqual('_middleware/someFunc2.handler');
       expect(fs.outputFile).toHaveBeenCalledTimes(2);
-      expect(fs.outputFile.mock.calls[0][0]).toEqual('testPath/_middleware/someFunc1');
-      expect(fs.outputFile.mock.calls[1][0]).toEqual('testPath/_middleware/someFunc2');
+      expect(fs.outputFile.mock.calls[0][0]).toEqual('testPath/_middleware/someFunc1.ts');
+      expect(fs.outputFile.mock.calls[1][0]).toEqual('testPath/_middleware/someFunc2.ts');
 
       const event = {};
       const context = {};
@@ -241,19 +255,25 @@ describe('Serverless middleware after:package:initialize hook', () => {
         someFunc2: { handler: jest.fn().mockImplementation(() => Promise.resolve()) },
       };
 
-      const someFunc1Tester = new GeneratedFunctionTester(fs.outputFile.mock.calls[0][1]);
+      const someFunc1Tester = GeneratedFunctionTester
+        .fromTypeScript(fs.outputFile.mock.calls[0][1]);
       await someFunc1Tester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.preHandler1.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.preHandler1.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.preHandler1.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.preHandler2.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.preHandler2.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.preHandler2.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.middleware1.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.middleware1.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.middleware1.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.middleware2.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.middleware2.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.middleware2.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.someFunc1.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.someFunc1.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.someFunc1.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
 
       shouldHaveBeenCalledInOrder([
         middlewares.preHandler1.handler,
@@ -266,15 +286,19 @@ describe('Serverless middleware after:package:initialize hook', () => {
       middlewares.preHandler1.handler.mockClear();
       middlewares.preHandler2.handler.mockClear();
 
-      const someFunc2Tester = new GeneratedFunctionTester(fs.outputFile.mock.calls[1][1]);
+      const someFunc2Tester = GeneratedFunctionTester
+        .fromTypeScript(fs.outputFile.mock.calls[1][1]);
       await someFunc2Tester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.preHandler1.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.preHandler1.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.preHandler1.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.preHandler2.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.preHandler2.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.preHandler2.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.someFunc2.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.someFunc2.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.someFunc2.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
 
       // Commented because jest doesn't clear invocationCallOrder
       // shouldHaveBeenCalledInOrder([
@@ -298,7 +322,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
             someFunc1: {
               name: 'someFunc1',
               handler: [
-                'middleware1.handler',
+                { then: 'middleware1.handler' },
                 { then: 'middleware2.handler', catch: 'catchMiddleware1.handler' },
                 'middleware3.handler',
                 { catch: 'catchMiddleware2.handler' },
@@ -319,8 +343,8 @@ describe('Serverless middleware after:package:initialize hook', () => {
       expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('_middleware/someFunc1.handler');
       expect(plugin.serverless.service.functions.someFunc2.handler).toEqual('_middleware/someFunc2.handler');
       expect(fs.outputFile).toHaveBeenCalledTimes(2);
-      expect(fs.outputFile.mock.calls[0][0]).toEqual('testPath/_middleware/someFunc1');
-      expect(fs.outputFile.mock.calls[1][0]).toEqual('testPath/_middleware/someFunc2');
+      expect(fs.outputFile.mock.calls[0][0]).toEqual('testPath/_middleware/someFunc1.ts');
+      expect(fs.outputFile.mock.calls[1][0]).toEqual('testPath/_middleware/someFunc2.ts');
 
       const event = {};
       const context = {};
@@ -349,26 +373,35 @@ describe('Serverless middleware after:package:initialize hook', () => {
         someFunc2: { handler: jest.fn().mockImplementation(() => Promise.resolve()) },
       };
 
-      const someFunc1Tester = new GeneratedFunctionTester(fs.outputFile.mock.calls[0][1]);
+      const someFunc1Tester = GeneratedFunctionTester
+        .fromTypeScript(fs.outputFile.mock.calls[0][1]);
       await someFunc1Tester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.preHandler1.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.preHandler1.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.preHandler1.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.preHandler2.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.preHandler2.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.preHandler2.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.catchPreHandler1.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.catchPreHandler1.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.catchPreHandler1.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.middleware1.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.middleware1.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.middleware1.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.middleware2.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.middleware2.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.middleware2.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.catchMiddleware1.handler).not.toHaveBeenCalled();
       expect(middlewares.middleware3.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.middleware3.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.middleware3.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.catchMiddleware2.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.catchMiddleware2.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.catchMiddleware2.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.someFunc1.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.someFunc1.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.someFunc1.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
 
       shouldHaveBeenCalledInOrder([
         middlewares.preHandler1.handler,
@@ -384,17 +417,22 @@ describe('Serverless middleware after:package:initialize hook', () => {
       middlewares.preHandler1.handler.mockClear();
       middlewares.preHandler2.handler.mockClear();
       middlewares.catchPreHandler1.handler.mockClear();
-      const someFunc2Tester = new GeneratedFunctionTester(fs.outputFile.mock.calls[1][1]);
+      const someFunc2Tester = GeneratedFunctionTester
+        .fromTypeScript(fs.outputFile.mock.calls[1][1]);
       await someFunc2Tester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.preHandler1.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.preHandler1.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.preHandler1.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.preHandler2.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.preHandler2.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.preHandler2.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.catchPreHandler1.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.catchPreHandler1.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.catchPreHandler1.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.someFunc2.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.someFunc2.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.someFunc2.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
 
       // Commented because jest doesn't clear invocationCallOrder
       // shouldHaveBeenCalledInOrder([
@@ -417,7 +455,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
             someFunc1: {
               name: 'someFunc1',
               handler: [
-                'middleware1.handler',
+                { then: 'middleware1.handler' },
                 { then: 'middleware2.handler', catch: 'catchMiddleware1.handler' },
                 'middleware3.handler',
                 { catch: 'catchMiddleware2.handler' },
@@ -438,8 +476,8 @@ describe('Serverless middleware after:package:initialize hook', () => {
       expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('_middleware/someFunc1.handler');
       expect(plugin.serverless.service.functions.someFunc2.handler).toEqual('_middleware/someFunc2.handler');
       expect(fs.outputFile).toHaveBeenCalledTimes(2);
-      expect(fs.outputFile.mock.calls[0][0]).toEqual('testPath/_middleware/someFunc1');
-      expect(fs.outputFile.mock.calls[1][0]).toEqual('testPath/_middleware/someFunc2');
+      expect(fs.outputFile.mock.calls[0][0]).toEqual('testPath/_middleware/someFunc1.ts');
+      expect(fs.outputFile.mock.calls[1][0]).toEqual('testPath/_middleware/someFunc2.ts');
 
       const event = {};
       const context = {};
@@ -469,15 +507,19 @@ describe('Serverless middleware after:package:initialize hook', () => {
         someFunc2: { handler: jest.fn().mockImplementation(() => Promise.resolve()) },
       };
 
-      const someFunc1Tester = new GeneratedFunctionTester(fs.outputFile.mock.calls[0][1]);
+      const someFunc1Tester = GeneratedFunctionTester
+        .fromTypeScript(fs.outputFile.mock.calls[0][1]);
       await someFunc1Tester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.preHandler1.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.preHandler1.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.preHandler1.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.preHandler2.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.preHandler2.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.preHandler2.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.catchPreHandler1.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.catchPreHandler1.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.catchPreHandler1.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.middleware1.handler).not.toHaveBeenCalled();
       expect(middlewares.middleware2.handler).not.toHaveBeenCalled();
       expect(middlewares.catchMiddleware1.handler).not.toHaveBeenCalled();
@@ -494,15 +536,19 @@ describe('Serverless middleware after:package:initialize hook', () => {
       middlewares.preHandler1.handler.mockClear();
       middlewares.preHandler2.handler.mockClear();
       middlewares.catchPreHandler1.handler.mockClear();
-      const someFunc2Tester = new GeneratedFunctionTester(fs.outputFile.mock.calls[1][1]);
+      const someFunc2Tester = GeneratedFunctionTester
+        .fromTypeScript(fs.outputFile.mock.calls[1][1]);
       await someFunc2Tester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.preHandler1.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.preHandler1.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.preHandler1.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.preHandler2.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.preHandler2.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.preHandler2.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.catchPreHandler1.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.catchPreHandler1.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.catchPreHandler1.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.someFunc2.handler).not.toHaveBeenCalled();
 
       // Commented because jest doesn't clear invocationCallOrder
@@ -527,7 +573,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
           functions: {
             someFunc1: {
               name: 'someFunc1',
-              handler: ['middleware1.handler', 'middleware2.handler', 'someFunc1.handler'],
+              handler: [{ then: 'middleware1.handler' }, 'middleware2.handler', 'someFunc1.handler'],
             },
             someFunc2: {
               name: 'someFunc2',
@@ -543,8 +589,8 @@ describe('Serverless middleware after:package:initialize hook', () => {
       expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('_middleware/someFunc1.handler');
       expect(plugin.serverless.service.functions.someFunc2.handler).toEqual('_middleware/someFunc2.handler');
       expect(fs.outputFile).toHaveBeenCalledTimes(2);
-      expect(fs.outputFile.mock.calls[0][0]).toEqual('testPath/_middleware/someFunc1');
-      expect(fs.outputFile.mock.calls[1][0]).toEqual('testPath/_middleware/someFunc2');
+      expect(fs.outputFile.mock.calls[0][0]).toEqual('testPath/_middleware/someFunc1.ts');
+      expect(fs.outputFile.mock.calls[1][0]).toEqual('testPath/_middleware/someFunc2.ts');
 
       const event = {};
       const context = {};
@@ -557,19 +603,25 @@ describe('Serverless middleware after:package:initialize hook', () => {
         someFunc2: { handler: jest.fn().mockImplementation(() => Promise.resolve()) },
       };
 
-      const someFunc1Tester = new GeneratedFunctionTester(fs.outputFile.mock.calls[0][1]);
+      const someFunc1Tester = GeneratedFunctionTester
+        .fromTypeScript(fs.outputFile.mock.calls[0][1]);
       await someFunc1Tester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.middleware1.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.middleware1.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.middleware1.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.middleware2.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.middleware2.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.middleware2.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.someFunc1.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.someFunc1.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.someFunc1.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.posHandler1.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.posHandler1.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.posHandler1.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.posHandler2.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.posHandler2.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.posHandler2.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
 
       shouldHaveBeenCalledInOrder([
         middlewares.middleware1.handler,
@@ -582,15 +634,19 @@ describe('Serverless middleware after:package:initialize hook', () => {
       middlewares.posHandler1.handler.mockClear();
       middlewares.posHandler2.handler.mockClear();
 
-      const someFunc2Tester = new GeneratedFunctionTester(fs.outputFile.mock.calls[1][1]);
+      const someFunc2Tester = GeneratedFunctionTester
+        .fromTypeScript(fs.outputFile.mock.calls[1][1]);
       await someFunc2Tester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.someFunc2.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.someFunc2.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.someFunc2.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.posHandler1.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.posHandler1.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.posHandler1.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.posHandler2.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.posHandler2.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.posHandler2.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
 
       // Commented because jest doesn't clear invocationCallOrder
       // shouldHaveBeenCalledInOrder([
@@ -612,7 +668,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
             someFunc1: {
               name: 'someFunc1',
               handler: [
-                'middleware1.handler',
+                { then: 'middleware1.handler' },
                 { then: 'middleware2.handler', catch: 'catchMiddleware1.handler' },
                 'middleware3.handler',
                 { catch: 'catchMiddleware2.handler' },
@@ -633,8 +689,8 @@ describe('Serverless middleware after:package:initialize hook', () => {
       expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('_middleware/someFunc1.handler');
       expect(plugin.serverless.service.functions.someFunc2.handler).toEqual('_middleware/someFunc2.handler');
       expect(fs.outputFile).toHaveBeenCalledTimes(2);
-      expect(fs.outputFile.mock.calls[0][0]).toEqual('testPath/_middleware/someFunc1');
-      expect(fs.outputFile.mock.calls[1][0]).toEqual('testPath/_middleware/someFunc2');
+      expect(fs.outputFile.mock.calls[0][0]).toEqual('testPath/_middleware/someFunc1.ts');
+      expect(fs.outputFile.mock.calls[1][0]).toEqual('testPath/_middleware/someFunc2.ts');
 
       const event = {};
       const context = {};
@@ -663,26 +719,35 @@ describe('Serverless middleware after:package:initialize hook', () => {
         someFunc2: { handler: jest.fn().mockImplementation(() => Promise.resolve()) },
       };
 
-      const someFunc1Tester = new GeneratedFunctionTester(fs.outputFile.mock.calls[0][1]);
+      const someFunc1Tester = GeneratedFunctionTester
+        .fromTypeScript(fs.outputFile.mock.calls[0][1]);
       await someFunc1Tester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.middleware1.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.middleware1.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.middleware1.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.middleware2.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.middleware2.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.middleware2.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.catchMiddleware1.handler).not.toHaveBeenCalled();
       expect(middlewares.middleware3.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.middleware3.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.middleware3.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.catchMiddleware2.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.catchMiddleware2.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.catchMiddleware2.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.someFunc1.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.someFunc1.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.someFunc1.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.posHandler1.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.posHandler1.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.posHandler1.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.posHandler2.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.posHandler2.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.posHandler2.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.catchPosHandler1.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.catchPosHandler1.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.catchPosHandler1.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
 
       shouldHaveBeenCalledInOrder([
         middlewares.middleware1.handler,
@@ -697,17 +762,22 @@ describe('Serverless middleware after:package:initialize hook', () => {
       middlewares.posHandler1.handler.mockClear();
       middlewares.posHandler2.handler.mockClear();
       middlewares.catchPosHandler1.handler.mockClear();
-      const someFunc2Tester = new GeneratedFunctionTester(fs.outputFile.mock.calls[1][1]);
+      const someFunc2Tester = GeneratedFunctionTester
+        .fromTypeScript(fs.outputFile.mock.calls[1][1]);
       await someFunc2Tester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.someFunc2.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.someFunc2.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.someFunc2.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.posHandler1.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.posHandler1.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.posHandler1.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.posHandler2.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.posHandler2.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.posHandler2.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.catchPosHandler1.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.catchPosHandler1.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.catchPosHandler1.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
 
       // Commented because jest doesn't clear invocationCallOrder
       // shouldHaveBeenCalledInOrder([
@@ -730,7 +800,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
             someFunc1: {
               name: 'someFunc1',
               handler: [
-                'middleware1.handler',
+                { then: 'middleware1.handler' },
                 { then: 'middleware2.handler', catch: 'catchMiddleware1.handler' },
                 'middleware3.handler',
                 { catch: 'catchMiddleware2.handler' },
@@ -751,8 +821,8 @@ describe('Serverless middleware after:package:initialize hook', () => {
       expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('_middleware/someFunc1.handler');
       expect(plugin.serverless.service.functions.someFunc2.handler).toEqual('_middleware/someFunc2.handler');
       expect(fs.outputFile).toHaveBeenCalledTimes(2);
-      expect(fs.outputFile.mock.calls[0][0]).toEqual('testPath/_middleware/someFunc1');
-      expect(fs.outputFile.mock.calls[1][0]).toEqual('testPath/_middleware/someFunc2');
+      expect(fs.outputFile.mock.calls[0][0]).toEqual('testPath/_middleware/someFunc1.ts');
+      expect(fs.outputFile.mock.calls[1][0]).toEqual('testPath/_middleware/someFunc2.ts');
 
       const event = {};
       const context = {};
@@ -781,22 +851,29 @@ describe('Serverless middleware after:package:initialize hook', () => {
         someFunc2: { handler: jest.fn().mockImplementation(() => Promise.resolve()) },
       };
 
-      const someFunc1Tester = new GeneratedFunctionTester(fs.outputFile.mock.calls[0][1]);
+      const someFunc1Tester = GeneratedFunctionTester
+        .fromTypeScript(fs.outputFile.mock.calls[0][1]);
       await someFunc1Tester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.middleware1.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.middleware1.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.middleware1.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.middleware2.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.middleware2.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.middleware2.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.catchMiddleware1.handler).not.toHaveBeenCalled();
       expect(middlewares.middleware3.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.middleware3.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.middleware3.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.catchMiddleware2.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.catchMiddleware2.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.catchMiddleware2.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.someFunc1.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.someFunc1.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.someFunc1.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.posHandler1.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.posHandler1.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.posHandler1.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.posHandler2.handler).not.toHaveBeenCalled();
       expect(middlewares.catchPosHandler1.handler).not.toHaveBeenCalled();
 
@@ -812,13 +889,16 @@ describe('Serverless middleware after:package:initialize hook', () => {
       middlewares.posHandler1.handler.mockClear();
       middlewares.posHandler2.handler.mockClear();
       middlewares.catchPosHandler1.handler.mockClear();
-      const someFunc2Tester = new GeneratedFunctionTester(fs.outputFile.mock.calls[1][1]);
+      const someFunc2Tester = GeneratedFunctionTester
+        .fromTypeScript(fs.outputFile.mock.calls[1][1]);
       await someFunc2Tester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.someFunc2.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.someFunc2.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.someFunc2.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.posHandler1.handler).toHaveBeenCalledTimes(1);
-      expect(middlewares.posHandler1.handler).toHaveBeenCalledWith(event, context);
+      expect(middlewares.posHandler1.handler)
+        .toHaveBeenCalledWith(event, context, expect.any(Function));
       expect(middlewares.posHandler2.handler).not.toHaveBeenCalled();
       expect(middlewares.catchPosHandler1.handler).not.toHaveBeenCalled();
 

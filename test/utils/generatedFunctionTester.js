@@ -1,6 +1,14 @@
+const { transpileModule, ModuleKind } = require('typescript');
+
 class GeneratedFunctionTester {
-  constructor(func) {
-    this.func = func;
+  constructor(fn) {
+    this.fn = fn;
+  }
+
+  static fromTypeScript(fn) {
+    return new GeneratedFunctionTester(transpileModule(fn, {
+      compilerOptions: { module: ModuleKind.CommonJS }
+    }).outputText);
   }
 
   get middlewareFunction() {
@@ -13,8 +21,9 @@ class GeneratedFunctionTester {
 
         return dependency;
       };
-      const module = { exports: {} };
-      ${this.func}
+      const exports = {};
+      const module = { exports };
+      ${this.fn}
       return module.exports.handler(event, context);
     `);
   }
