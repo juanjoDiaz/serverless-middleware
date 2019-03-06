@@ -10,10 +10,21 @@ Serverless Middleware
 
 Serverless plugin to allow middleware handlers configured directly in serverless.yaml
 
-**Requirements:**
+## Requirements:
 * Serverless
 * AWS provider
 * Node.js 8.10+
+
+### Supported runtimes
+
+- [x] nodejs8.10 (both Javascript and Typescript)
+- [ ] dotnetcore2.1
+- [ ] java8
+- [ ] go1.x
+- [ ] python2.7
+- [ ] python3.7
+- [ ] ruby2.5
+- [ ] provided 
 
 ## Installation
 
@@ -128,7 +139,6 @@ functions:
 ```
 
 will result in a similar promise chain as above.
-
 
 ## Packaging
 
