@@ -8,15 +8,9 @@
  * */
 const fs = require('fs-extra');
 const path = require('path');
-
-const parseHandler = (handler) => {
-  const [module, fn] = handler.split(/\.(?=[^.]+$)/);
-  return {
-    name: module.replace(/\s|\//g, '_'),
-    module,
-    fn,
-  };
-};
+const createJSMiddlewareHandler = require('./javascript');
+const createTSMiddlewareHandler = require('./typescript');
+const { parseHandler } = require('./utils');
 
 /**
  * @classdesc Easily use handlers as middleware.
@@ -44,8 +38,8 @@ class Middleware {
     };
 
     this.middlewareBuilders = {
-      js: Middleware.createJSMiddlewareHandler,
-      ts: Middleware.createTSMiddlewareHandler,
+      js: createJSMiddlewareHandler,
+      ts: createTSMiddlewareHandler,
     };
   }
 
@@ -171,110 +165,6 @@ class Middleware {
     if (this.middlewareOpts.cleanFolder) {
       await fs.remove(this.middlewareOpts.pathFolder);
     }
-  }
-
-  /**
-   * @description Create TypeScript middleware handler
-   *
-   * @param {Array<string>} handlers - handlers to be run as middleware
-   *
-   * @fulfil {} — Middleware handler created
-   * @reject {Error} Middleware error
-   *
-   * @return {Promise}
-   * */
-  static createTSMiddlewareHandler(handlers, pathToRoot = '.') {
-    const handlersInfo = handlers
-      .reduce((modules, handler) => {
-        if (handler.then && handler.catch) {
-          const { name, module } = parseHandler(handler.then);
-          const { name: name2, module: module2 } = parseHandler(handler.catch);
-          return { ...modules, [module]: name, [module2]: name2 };
-        }
-        if (handler.then) {
-          const { name, module } = parseHandler(handler.then);
-          return { ...modules, [module]: name };
-        }
-
-        const { name, module } = parseHandler(handler.catch);
-        return { ...modules, [module]: name };
-      }, {});
-    const imports = Object.keys(handlersInfo)
-      .map(handler => `import * as ${handlersInfo[handler]} from '${pathToRoot}/${handler}'`).join('\n');
-
-    const wrapHandler = (handler) => {
-      const { name, fn } = parseHandler(handler);
-      return `prev => {
-      if (end) return prev;
-      context.prev = prev;
-      return ${name}.${fn}(event, context, () => { throw new Error('Callback can\\'t be used in middlewares.'); });
-    }`;
-    };
-
-    const promiseChain = handlers.map((handler) => {
-      if (handler.then && handler.catch) {
-        return `    .then(${wrapHandler(handler.then)})\n    .catch(${wrapHandler(handler.catch)})`;
-      }
-
-      if (handler.then) return `    .then(${wrapHandler(handler.then)})`;
-
-      return `    .catch(${wrapHandler(handler.catch)})`;
-    }).join('\n');
-
-    return `'use strict';
-    
-${imports}
-
-export async function handler(event, context) {
-  let end = false;
-  context.end = () => end = true;
-
-  return Promise.resolve()
-${promiseChain};
-};`;
-  }
-
-  /**
-   * @description Create Javascript middleware handler
-   *
-   * @param {Array<string>} handlers - handlers to be run as middleware
-   *
-   * @fulfil {} — Middleware handler created
-   * @reject {Error} Middleware error
-   *
-   * @return {Promise}
-   * */
-  static createJSMiddlewareHandler(handlers, pathToRoot = '.') {
-    return `'use strict';
-    
-const handlers = ${JSON.stringify(handlers)};
-module.exports.handler = async (event, context) => {
-  let end = false;
-  context.end = () => end = true;
-
-  const wrappedHandler = handler => prev => {
-    if (end) return prev;
-    context.prev = prev;
-    const [module, fn] = handler.split(/\\.(?=[^\\.]+$)/);
-    return require(\`${pathToRoot}/\${module}\`)[fn](event, context);
-  };
-
-  return handlers
-    .reduce((promise, handler) => {
-      if (typeof handler === 'object') {
-        if (handler.then && handler.catch) {
-          return promise
-            .then(wrappedHandler(handler.then))
-            .catch(wrappedHandler(handler.catch));
-        }
-        if (handler.then) return promise.then(wrappedHandler(handler.then));
-        if (handler.catch) return promise.catch(wrappedHandler(handler.catch));
-        throw new Error(\`Unkownw handler: \${JSON.stringify(handler)}\`);
-      }
-
-      return promise.then(wrappedHandler(handler));
-    }, Promise.resolve());
-};`;
   }
 }
 
