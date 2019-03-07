@@ -92,8 +92,15 @@ class Middleware {
             .concat(fn.handler)
             .concat(this.middlewareOpts.pos)
             .map((handler) => {
-              if (typeof handler === 'string') return { then: handler };
-              if (handler.then || handler.catch) return handler;
+              if (handler.then && handler.catch) {
+                return {
+                  then: parseHandler(handler.then),
+                  catch: parseHandler(handler.catch),
+                };
+              }
+              if (handler.then) return { then: parseHandler(handler.then) };
+              if (handler.catch) return { catch: parseHandler(handler.catch) };
+              if (typeof handler === 'string') return { then: parseHandler(handler) };
 
               throw new Error(`Invalid handler: ${JSON.stringify(handler)}`);
             });
@@ -135,7 +142,7 @@ class Middleware {
     const getNodeType = (handler) => {
       if (handler === undefined) return false;
 
-      const { module } = parseHandler(handler);
+      const { module } = handler;
 
       if (fs.existsSync(`${module}.js`) || fs.existsSync(`${module}.jsx`)) return 'js';
       if (fs.existsSync(`${module}.ts`) || fs.existsSync(`${module}.tsx`)) return 'ts';
