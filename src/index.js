@@ -125,6 +125,7 @@ class Middleware {
   getLanguageExtension(handlers) {
     switch (this.serverless.service.provider.runtime) {
       case 'nodejs8.10':
+      case 'nodejs10.x':
         return Middleware.getNodeExtension(handlers);
       // TODO add other runtimes
       default:
