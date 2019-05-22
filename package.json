@@ -1,6 +1,6 @@
 {
   "name": "serverless-middleware",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Serverless plugin to allow middleware handlers configured directly in serverless.yaml",
   "main": "src/index.js",
   "scripts": {
