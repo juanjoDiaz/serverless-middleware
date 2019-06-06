@@ -150,7 +150,7 @@ These settings are also set in the `custom.middleware` section of `serverless.ya
 ```yaml
 custom:
   middleware:
-    folderName: my_custom_folder  # defaults to '_middleware'
+    folderName: my_custom_folder  # defaults to '.middleware'
     cleanFolder: false            # defaults to 'true'
 ```
 

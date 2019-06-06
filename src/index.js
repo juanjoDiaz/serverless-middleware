@@ -46,7 +46,7 @@ class Middleware {
    * */
   configPlugin(service) {
     const defaultOpts = {
-      folderName: '_middleware',
+      folderName: '.middleware',
       cleanFolder: true,
       pre: [],
       pos: [],

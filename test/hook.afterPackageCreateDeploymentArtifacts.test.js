@@ -31,7 +31,7 @@ describe('Serverless middleware plugin after:deploy:deploy hook', () => {
     await plugin.hooks['after:package:createDeploymentArtifacts']();
 
     expect(fs.remove).toHaveBeenCalledTimes(1);
-    expect(fs.remove).toHaveBeenCalledWith('testPath/_middleware');
+    expect(fs.remove).toHaveBeenCalledWith('testPath/.middleware');
   });
 
   it('Should clean the custom temporary folder if cleanFolder is set to true', async () => {
