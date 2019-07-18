@@ -43,7 +43,7 @@ plugins:
 
 ## How it works
 
-Middleware allows you to set up multiple handlers to be executed secuencially including error handlers that will capture any exception in the chain.
+Middleware allows you to set up multiple handlers to be executed sequentially including error handlers that will capture any exception in the chain.
 
 Middlewares are just standard AWS lambda handlers that return a promise (or are async).
 Handlers using `callback` will NOT work.
