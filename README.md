@@ -43,7 +43,7 @@ plugins:
 
 ## How it works
 
-Middleware allows you to set up multiple handlers to be executed secuencially including error handlers that will capture any exception in the chain.
+Middleware allows you to set up multiple handlers to be executed sequentially including error handlers that will capture any exception in the chain.
 
 Middlewares are just standard AWS lambda handlers that return a promise (or are async).
 Handlers using `callback` will NOT work.
@@ -52,7 +52,7 @@ const myMiddleware = async (event, context) => { ... };
 ```
 
 Once `serverless-middleware` is installed you can set the `function.handler` property to an array.
-Each middleware handler can be a string (like a standard handler would be) or and object containing the properties `then` or `catch`.
+Each middleware handler can be a string (like a standard handler would be) or an object containing the properties `then` and/or `catch`.
 
 For example:
 
@@ -88,7 +88,7 @@ Promise.resolve()
 As with standard promises, catch handlers are only executed when there are exceptions.
 The resulting lambda will return the result returned by the last middleware handler executed.
 
-The `event` and `context` objects are passed from handler to handler so you can attach new properties to be accessed by subsequents handlers.
+The `event` and `context` objects are passed from handler to handler so you can attach new properties to be accessed by subsequent handlers.
 `context` always contains the result of the previous handler in the `prev` property.
 The user can also stop at any point in the chain by calling the `end` method in the `context` argument. After `context.end()` is called, no more handlers will be executed.
 
@@ -142,8 +142,8 @@ will result in a similar promise chain as above.
 
 ## Packaging
 
-In most cases you shouldn't need to change the default packaging configuration.
-For edge cases, Middleware can be confure to use a specific intermediary folder and to not clear it after creating the serverless package.
+In most cases, you shouldn't need to change the default packaging configuration.
+For edge cases, Middleware can be configured to use a specific intermediary folder and to not clear it after creating the serverless package.
 
 These settings are also set in the `custom.middleware` section of `serverless.yaml`
 
@@ -158,7 +158,7 @@ This might be useful if you are using `sls package` and building your own artifa
 
 ## Contribute
 
-Help us making this plugin better and future proof.
+Help us to make this plugin better.
 
 * Clone the code
 * Install the dependencies with `npm install`
