@@ -1,4 +1,15 @@
 /**
+ * @description Converts names containing dash to underscore
+ *
+ * @param {string} name - The name of the module/function to be fixed
+ *
+ * @returns {string} Returns a string with all dashs replaced by underscore
+ */
+function replaceDashByUnderscoreFix(name) {
+  return name.replace(/-/g, "_");
+}
+
+/**
  * @description Create Javascript middleware handler
  *
  * @param {Array<string>} handlers - handlers to be run as middleware
@@ -23,23 +34,23 @@ function createJSMiddlewareHandler(handlers, pathToRoot) {
     }, {});
 
   const imports = Object.keys(handlersInfo)
-    .map(handler => `const ${handlersInfo[handler]} = require('${pathToRoot}/${handler}');`).join('\n');
+    .map(handler => `const ${replaceDashByUnderscoreFix(handlersInfo[handler])} = require('${pathToRoot}/${handler}');`).join('\n');
 
   const promiseChain = handlers.map((handler) => {
     if (handler.then && handler.catch) {
       const { name, fn } = handler.then;
       const { name: name2, fn: fn2 } = handler.catch;
-      return `    .then(wrappedHandler(${name}.${fn}.bind(${name})))
-    .catch(wrappedHandler(${name2}.${fn2}.bind(${name2})))`;
+      return `    .then(wrappedHandler(${replaceDashByUnderscoreFix(name)}.${fn}.bind(${replaceDashByUnderscoreFix(name)})))
+    .catch(wrappedHandler(${replaceDashByUnderscoreFix(name2)}.${fn2}.bind(${replaceDashByUnderscoreFix(name2)})))`;
     }
 
     if (handler.then) {
       const { name, fn } = handler.then;
-      return `    .then(wrappedHandler(${name}.${fn}.bind(${name})))`;
+      return `    .then(wrappedHandler(${replaceDashByUnderscoreFix(name)}.${fn}.bind(${replaceDashByUnderscoreFix(name)})))`;
     }
 
     const { name, fn } = handler.catch;
-    return `    .catch(wrappedHandler(${name}.${fn}.bind(${name})))`;
+    return `    .catch(wrappedHandler(${replaceDashByUnderscoreFix(name)}.${fn}.bind(${replaceDashByUnderscoreFix(name)})))`;
   }).join('\n');
 
   return `'use strict';
