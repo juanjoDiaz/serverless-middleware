@@ -23,7 +23,7 @@ function createTSMiddlewareHandler(handlers, pathToRoot) {
     }, {});
 
   const imports = Object.keys(handlersInfo)
-    .map(handler => `import * as ${handlersInfo[handler]} from '${pathToRoot}/${handler}';`).join('\n');
+    .map((handler) => `import * as ${handlersInfo[handler]} from '${pathToRoot}/${handler}';`).join('\n');
 
   const promiseChain = handlers.map((handler) => {
     if (handler.then && handler.catch) {

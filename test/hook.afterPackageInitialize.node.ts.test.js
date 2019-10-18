@@ -8,7 +8,7 @@ const { GeneratedFunctionTester } = require('./utils/generatedFunctionTester');
 const { shouldHaveBeenCalledInOrder } = require('./utils/jest');
 
 fs.outputFile.mockReturnValue(Promise.resolve());
-fs.existsSync.mockImplementation(path => path.endsWith('.ts'));
+fs.existsSync.mockImplementation((path) => path.endsWith('.ts'));
 
 describe('Serverless middleware after:package:initialize hook', () => {
   beforeEach(() => fs.outputFile.mockClear());

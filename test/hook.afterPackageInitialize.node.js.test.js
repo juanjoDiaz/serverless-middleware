@@ -11,7 +11,7 @@ fs.outputFile.mockReturnValue(Promise.resolve());
 
 describe('Serverless middleware after:package:initialize hook', () => {
   beforeEach(() => {
-    fs.existsSync.mockImplementation(path => path.endsWith('.js'));
+    fs.existsSync.mockImplementation((path) => path.endsWith('.js'));
     fs.outputFile.mockClear();
   });
 
@@ -39,7 +39,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
     });
 
     it('should error on unsupported node extensions', async () => {
-      fs.existsSync.mockImplementation(path => !path.startsWith('middleware1'));
+      fs.existsSync.mockImplementation((path) => !path.startsWith('middleware1'));
       const serverless = getServerlessConfig({
         service: {
           functions: {
@@ -61,7 +61,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
     });
 
     it('should error on invalid handler', async () => {
-      fs.existsSync.mockImplementation(path => !path.startsWith('middleware1'));
+      fs.existsSync.mockImplementation((path) => !path.startsWith('middleware1'));
       const serverless = getServerlessConfig({
         service: {
           functions: {

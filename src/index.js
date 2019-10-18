@@ -151,7 +151,7 @@ class Middleware {
       throw new Error(`Unsupported handler extension for module ${module}. Only .js, .jsx, .ts and .tsx are supported.`);
     };
 
-    const isTS = handlers.some(handler => getNodeType(handler.then) === 'ts' || getNodeType(handler.catch) === 'ts');
+    const isTS = handlers.some((handler) => getNodeType(handler.then) === 'ts' || getNodeType(handler.catch) === 'ts');
 
     return isTS ? 'ts' : 'js';
   }
