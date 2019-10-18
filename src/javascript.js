@@ -6,7 +6,7 @@
  * @returns {string} Returns a string with all dashs replaced by underscore
  */
 function replaceDashByUnderscoreFix(name) {
-  return name.replace(/-/g, "_");
+  return name.replace(/-/g, '_');
 }
 
 /**
