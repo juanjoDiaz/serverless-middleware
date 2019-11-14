@@ -43,14 +43,22 @@ function createTSMiddlewareHandler(handlers, pathToRoot) {
   }).join('\n');
 
   return `'use strict';
+
+import { Context } from 'aws-lambda';
+    
+type MiddlewareContext<TResult = any> = Context & { end: () => void, prev: TResult };
+type Handler<TEvent = any, TResult = any> = (
+  event: TEvent,
+  context: MiddlewareContext,
+) => Promise<TResult>;
     
 ${imports}
 
-export async function handler(event, context) {
+export const handler: Handler = (event, context) => {
   let end = false;
   context.end = () => end = true;
 
-  const wrappedHandler = handler => prev => {
+  const wrappedHandler = (handler: Handler) => (prev: any): Promise<any> => {
     if (end) return prev;
     context.prev = prev;
     return handler(event, context);
