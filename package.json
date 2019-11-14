@@ -30,12 +30,12 @@
   },
   "devDependencies": {
     "coveralls": "^3.0.7",
-    "eslint": "^6.5.1",
+    "eslint": "^6.6.0",
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.18.2",
     "husky": "^3.0.9",
     "jest": "^24.9.0",
-    "typescript": "^3.6.4"
+    "typescript": "^3.7.2"
   },
   "husky": {
     "hooks": {
