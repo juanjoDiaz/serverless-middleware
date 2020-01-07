@@ -126,6 +126,7 @@ class Middleware {
     switch (this.serverless.service.provider.runtime) {
       case 'nodejs8.10':
       case 'nodejs10.x':
+      case 'nodejs12.x':
         return Middleware.getNodeExtension(handlers);
       // TODO add other runtimes
       default:
