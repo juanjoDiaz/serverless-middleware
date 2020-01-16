@@ -18,8 +18,11 @@ Serverless plugin to allow middleware handlers configured directly in serverless
 ### Supported runtimes
 
 - [x] nodejs8.10 (both Javascript and Typescript)
+- [x] nodejs10.x (both Javascript and Typescript)
+- [x] nodejs12.x (both Javascript and Typescript)
 - [ ] dotnetcore2.1
 - [ ] java8
+- [ ] java11
 - [ ] go1.x
 - [ ] python2.7
 - [ ] python3.7
