@@ -5,6 +5,10 @@ class GeneratedFunctionTester {
     this.fn = fn;
   }
 
+  static fromJavaScript(fn) {
+    return new GeneratedFunctionTester(fn);
+  }
+
   static fromTypeScript(fn) {
     return new GeneratedFunctionTester(transpileModule(fn, {
       compilerOptions: { module: ModuleKind.CommonJS },

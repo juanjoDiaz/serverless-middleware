@@ -12,7 +12,12 @@ const fsAsync = require('fs').promises;
 const Middleware = require('../src/index');
 const { getServerlessConfig } = require('./utils/configUtils');
 
-describe('Serverless middleware plugin after:deploy:deploy hook', () => {
+describe.each([
+  'after:package:createDeploymentArtifacts',
+  'after:deploy:function:deploy',
+  'after:invoke:local:invoke',
+  'before:offline:start:end',
+])('Serverless middleware plugin %s hook', (hook) => {
   beforeEach(() => fsAsync.rmdir.mockClear());
 
   it('Should clean the temporary folder if cleanFolder is set to true', async () => {
@@ -35,7 +40,7 @@ describe('Serverless middleware plugin after:deploy:deploy hook', () => {
     });
     const plugin = new Middleware(serverless, {});
 
-    await plugin.hooks['after:package:createDeploymentArtifacts']();
+    await plugin.hooks[hook]();
 
     expect(fsAsync.rmdir).toHaveBeenCalledTimes(1);
     expect(fsAsync.rmdir).toHaveBeenCalledWith('testPath/.middleware');
@@ -62,7 +67,7 @@ describe('Serverless middleware plugin after:deploy:deploy hook', () => {
     });
     const plugin = new Middleware(serverless, {});
 
-    await plugin.hooks['after:package:createDeploymentArtifacts']();
+    await plugin.hooks[hook]();
 
     expect(fsAsync.rmdir).toHaveBeenCalledTimes(1);
     expect(fsAsync.rmdir).toHaveBeenCalledWith('testPath/test-folder');
@@ -88,7 +93,7 @@ describe('Serverless middleware plugin after:deploy:deploy hook', () => {
     });
     const plugin = new Middleware(serverless, {});
 
-    await plugin.hooks['after:package:createDeploymentArtifacts']();
+    await plugin.hooks[hook]();
 
     expect(fsAsync.rmdir).not.toHaveBeenCalled();
   });

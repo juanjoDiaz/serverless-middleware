@@ -25,12 +25,17 @@ class Middleware {
    *
    * @param {!Object} serverless - Serverless object
    * */
-  constructor(serverless) {
+  constructor(serverless, options) {
     this.serverless = serverless;
+    this.options = options;
 
     this.hooks = {
       'after:package:initialize': this.processHandlers.bind(this),
       'after:package:createDeploymentArtifacts': this.clearResources.bind(this),
+      'before:deploy:function:packageFunction': this.processHandlers.bind(this),
+      'after:deploy:function:deploy': this.clearResources.bind(this),
+      'before:invoke:local:invoke': this.processHandlers.bind(this),
+      'after:invoke:local:invoke': this.clearResources.bind(this),
       'before:offline:start:init': this.processHandlers.bind(this),
       'before:offline:start:end': this.clearResources.bind(this),
     };
@@ -80,8 +85,20 @@ class Middleware {
   async processHandlers() {
     this.middlewareOpts = this.middlewareOpts || this.configPlugin(this.serverless.service);
 
-    const fns = this.serverless.service.getAllFunctions()
-      .map((name) => this.serverless.service.getFunction(name))
+    const fnNames = this.options.function
+      ? [this.options.function]
+      : this.serverless.service.getAllFunctions();
+
+    const fns = fnNames
+      .map((name) => {
+        const fn = this.serverless.service.getFunction(name);
+
+        if (fn === undefined) {
+          throw new Error(`Unknown function: ${name}`);
+        }
+
+        return fn;
+      })
       .filter((fn) => this.middlewareOpts.pre.length
         || this.middlewareOpts.pos.length
         || Array.isArray(fn.handler))
