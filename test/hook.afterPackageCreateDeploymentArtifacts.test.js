@@ -1,12 +1,19 @@
 /* global jest beforeEach describe it expect */
 
-jest.mock('fs-extra');
-const fs = require('fs-extra');
+jest.mock('fs', () => ({
+  existsSync: jest.mock(),
+  promises: {
+    mkdir: jest.fn(),
+    write: jest.fn(),
+    rmdir: jest.fn(),
+  },
+}));
+const fsAsync = require('fs').promises;
 const Middleware = require('../src/index');
 const { getServerlessConfig } = require('./utils/configUtils');
 
 describe('Serverless middleware plugin after:deploy:deploy hook', () => {
-  beforeEach(() => fs.remove.mockClear());
+  beforeEach(() => fsAsync.rmdir.mockClear());
 
   it('Should clean the temporary folder if cleanFolder is set to true', async () => {
     const mockProvider = { request: jest.fn(() => Promise.resolve()) };
@@ -30,8 +37,8 @@ describe('Serverless middleware plugin after:deploy:deploy hook', () => {
 
     await plugin.hooks['after:package:createDeploymentArtifacts']();
 
-    expect(fs.remove).toHaveBeenCalledTimes(1);
-    expect(fs.remove).toHaveBeenCalledWith('testPath/.middleware');
+    expect(fsAsync.rmdir).toHaveBeenCalledTimes(1);
+    expect(fsAsync.rmdir).toHaveBeenCalledWith('testPath/.middleware');
   });
 
   it('Should clean the custom temporary folder if cleanFolder is set to true', async () => {
@@ -57,8 +64,8 @@ describe('Serverless middleware plugin after:deploy:deploy hook', () => {
 
     await plugin.hooks['after:package:createDeploymentArtifacts']();
 
-    expect(fs.remove).toHaveBeenCalledTimes(1);
-    expect(fs.remove).toHaveBeenCalledWith('testPath/test-folder');
+    expect(fsAsync.rmdir).toHaveBeenCalledTimes(1);
+    expect(fsAsync.rmdir).toHaveBeenCalledWith('testPath/test-folder');
   });
 
   it('Should not clean the temporary folder if cleanFolder is set to false', async () => {
@@ -83,6 +90,6 @@ describe('Serverless middleware plugin after:deploy:deploy hook', () => {
 
     await plugin.hooks['after:package:createDeploymentArtifacts']();
 
-    expect(fs.remove).not.toHaveBeenCalled();
+    expect(fsAsync.rmdir).not.toHaveBeenCalled();
   });
 });

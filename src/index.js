@@ -3,14 +3,16 @@
  *
  * @see {@link https://serverless.com/framework/docs/providers/aws/guide/plugins/}
  *
- * @requires 'fs-extra'
+ * @requires 'fs'
  * @requires 'path'
  * */
-const fs = require('fs-extra');
+const fs = require('fs');
 const path = require('path');
 const createJSMiddlewareHandler = require('./javascript');
 const createTSMiddlewareHandler = require('./typescript');
 const { parseHandler } = require('./utils');
+
+const fsAsync = fs.promises;
 
 /**
  * @classdesc Easily use handlers as middleware.
@@ -77,44 +79,56 @@ class Middleware {
    * */
   async processHandlers() {
     this.middlewareOpts = this.middlewareOpts || this.configPlugin(this.serverless.service);
-    await Promise.all(
-      this.serverless.service.getAllFunctions()
-        .map(async (name) => {
-          const fn = this.serverless.service.getFunction(name);
 
-          if (!this.middlewareOpts.pre.length
-            && !this.middlewareOpts.pos.length
-            && !Array.isArray(fn.handler)) {
-            return;
-          }
+    const fns = this.serverless.service.getAllFunctions()
+      .map((name) => this.serverless.service.getFunction(name))
+      .filter((fn) => this.middlewareOpts.pre.length
+        || this.middlewareOpts.pos.length
+        || Array.isArray(fn.handler))
+      .map((fn) => {
+        const handlers = this.preProcessFnHandlers(fn);
+        const extension = this.getLanguageExtension(handlers);
+        return { fn, handlers, extension };
+      });
 
-          const handlers = this.middlewareOpts.pre
-            .concat(fn.handler)
-            .concat(this.middlewareOpts.pos)
-            .map((handler) => {
-              if (handler.then && handler.catch) {
-                return {
-                  then: parseHandler(handler.then),
-                  catch: parseHandler(handler.catch),
-                };
-              }
-              if (handler.then) return { then: parseHandler(handler.then) };
-              if (handler.catch) return { catch: parseHandler(handler.catch) };
-              if (typeof handler === 'string') return { then: parseHandler(handler) };
+    if (fns.length === 0) return;
 
-              throw new Error(`Invalid handler: ${JSON.stringify(handler)}`);
-            });
+    await fsAsync.mkdir(this.middlewareOpts.pathFolder, { recursive: true });
 
-          this.serverless.cli.log(`Middleware: setting ${handlers.length} middlewares for function ${name}`);
+    await Promise.all(fns.map(async ({ fn, handlers, extension }) => {
+      this.serverless.cli.log(`Middleware: setting ${handlers.length} middlewares for function ${fn.name}`);
 
-          const extension = this.getLanguageExtension(handlers);
-          const middlewareBuilder = this.middlewareBuilders[extension];
-          const handlerPath = `${this.middlewareOpts.pathFolder}/${name}.${extension}`;
-          const handler = middlewareBuilder(handlers, this.middlewareOpts.pathToRoot);
-          await fs.outputFile(handlerPath, handler);
-          fn.handler = `${this.middlewareOpts.folderName}/${name}.handler`;
-        }),
-    );
+      const middlewareBuilder = this.middlewareBuilders[extension];
+      const handlerPath = `${this.middlewareOpts.pathFolder}/${fn.name}.${extension}`;
+      const handler = middlewareBuilder(handlers, this.middlewareOpts.pathToRoot);
+      await fsAsync.write(handlerPath, handler);
+      // eslint-disable-next-line no-param-reassign
+      fn.handler = `${this.middlewareOpts.folderName}/${fn.name}.handler`;
+    }));
+  }
+
+  /**
+   * @description Generate the list of middlewares for a given function.
+   *
+   * @return {Object[]} List of middleware to include for the function
+   * */
+  preProcessFnHandlers(fn) {
+    return this.middlewareOpts.pre
+      .concat(fn.handler)
+      .concat(this.middlewareOpts.pos)
+      .map((handler) => {
+        if (handler.then && handler.catch) {
+          return {
+            then: parseHandler(handler.then),
+            catch: parseHandler(handler.catch),
+          };
+        }
+        if (handler.then) return { then: parseHandler(handler.then) };
+        if (handler.catch) return { catch: parseHandler(handler.catch) };
+        if (typeof handler === 'string') return { then: parseHandler(handler) };
+
+        throw new Error(`Invalid handler: ${JSON.stringify(handler)}`);
+      });
   }
 
   /**
@@ -168,7 +182,7 @@ class Middleware {
   async clearResources() {
     this.middlewareOpts = this.middlewareOpts || this.configPlugin(this.serverless.service);
     if (this.middlewareOpts.cleanFolder) {
-      await fs.remove(this.middlewareOpts.pathFolder);
+      await fsAsync.rmdir(this.middlewareOpts.pathFolder);
     }
   }
 }

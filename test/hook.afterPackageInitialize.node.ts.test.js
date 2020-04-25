@@ -1,17 +1,31 @@
 /* global jest beforeEach describe it expect */
 
-jest.mock('fs-extra');
-const fs = require('fs-extra');
+jest.mock('fs', () => ({
+  existsSync: jest.fn(),
+  promises: {
+    mkdir: jest.fn(),
+    write: jest.fn(),
+    rmdir: jest.fn(),
+  },
+}));
+
+const fs = require('fs');
+
+const fsAsync = fs.promises;
 const Middleware = require('../src/index');
 const { getServerlessConfig } = require('./utils/configUtils');
 const { GeneratedFunctionTester } = require('./utils/generatedFunctionTester');
 const { shouldHaveBeenCalledInOrder } = require('./utils/jest');
 
-fs.outputFile.mockReturnValue(Promise.resolve());
 fs.existsSync.mockImplementation((path) => path.endsWith('.ts'));
+fsAsync.mkdir.mockReturnValue(Promise.resolve());
+fsAsync.write.mockReturnValue(Promise.resolve());
 
 describe('Serverless middleware after:package:initialize hook', () => {
-  beforeEach(() => fs.outputFile.mockClear());
+  beforeEach(() => {
+    fsAsync.mkdir.mockClear();
+    fsAsync.write.mockClear();
+  });
 
   describe('without pre/pos', () => {
     it('should process handlers that contain arrays and do nothing with standard handlers', async () => {
@@ -35,8 +49,10 @@ describe('Serverless middleware after:package:initialize hook', () => {
 
       expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('.middleware/someFunc1.handler');
       expect(plugin.serverless.service.functions.someFunc2.handler).toEqual('someFunc2.handler');
-      expect(fs.outputFile).toHaveBeenCalledTimes(1);
-      expect(fs.outputFile.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.ts');
+      expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
+      expect(fsAsync.mkdir.mock.calls[0][0]).toEqual('testPath/.middleware');
+      expect(fsAsync.write).toHaveBeenCalledTimes(1);
+      expect(fsAsync.write.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.ts');
 
       const event = {};
       const context = {};
@@ -47,7 +63,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
       };
 
       const functionTester = GeneratedFunctionTester
-        .fromTypeScript(fs.outputFile.mock.calls[0][1]);
+        .fromTypeScript(fsAsync.write.mock.calls[0][1]);
       await functionTester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.middleware1.handler).toHaveBeenCalledTimes(1);
@@ -91,8 +107,10 @@ describe('Serverless middleware after:package:initialize hook', () => {
 
       expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('.middleware/someFunc1.handler');
       expect(plugin.serverless.service.functions.someFunc2.handler).toEqual('someFunc2.handler');
-      expect(fs.outputFile).toHaveBeenCalledTimes(1);
-      expect(fs.outputFile.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.ts');
+      expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
+      expect(fsAsync.mkdir.mock.calls[0][0]).toEqual('testPath/.middleware');
+      expect(fsAsync.write).toHaveBeenCalledTimes(1);
+      expect(fsAsync.write.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.ts');
 
       const event = {};
       const context = {};
@@ -112,7 +130,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
       };
 
       const functionTester = GeneratedFunctionTester
-        .fromTypeScript(fs.outputFile.mock.calls[0][1]);
+        .fromTypeScript(fsAsync.write.mock.calls[0][1]);
       await functionTester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.middleware1.handler).toHaveBeenCalledTimes(1);
@@ -163,8 +181,10 @@ describe('Serverless middleware after:package:initialize hook', () => {
 
       expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('.middleware/someFunc1.handler');
       expect(plugin.serverless.service.functions.someFunc2.handler).toEqual('someFunc2.handler');
-      expect(fs.outputFile).toHaveBeenCalledTimes(1);
-      expect(fs.outputFile.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.ts');
+      expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
+      expect(fsAsync.mkdir.mock.calls[0][0]).toEqual('testPath/.middleware');
+      expect(fsAsync.write).toHaveBeenCalledTimes(1);
+      expect(fsAsync.write.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.ts');
 
       const event = {};
       const context = {};
@@ -184,7 +204,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
       };
 
       const functionTester = GeneratedFunctionTester
-        .fromTypeScript(fs.outputFile.mock.calls[0][1]);
+        .fromTypeScript(fsAsync.write.mock.calls[0][1]);
       await functionTester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.middleware1.handler).toHaveBeenCalledTimes(1);
@@ -230,9 +250,12 @@ describe('Serverless middleware after:package:initialize hook', () => {
 
       expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('.middleware/someFunc1.handler');
       expect(plugin.serverless.service.functions.someFunc2.handler).toEqual('.middleware/someFunc2.handler');
-      expect(fs.outputFile).toHaveBeenCalledTimes(2);
-      expect(fs.outputFile.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.ts');
-      expect(fs.outputFile.mock.calls[1][0]).toEqual('testPath/.middleware/someFunc2.ts');
+      expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
+      expect(fsAsync.mkdir.mock.calls[0][0]).toEqual('testPath/.middleware');
+      expect(fsAsync.mkdir.mock.calls[0][1]).toEqual({ recursive: true });
+      expect(fsAsync.write).toHaveBeenCalledTimes(2);
+      expect(fsAsync.write.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.ts');
+      expect(fsAsync.write.mock.calls[1][0]).toEqual('testPath/.middleware/someFunc2.ts');
 
       const event = {};
       const context = {};
@@ -246,7 +269,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
       };
 
       const someFunc1Tester = GeneratedFunctionTester
-        .fromTypeScript(fs.outputFile.mock.calls[0][1]);
+        .fromTypeScript(fsAsync.write.mock.calls[0][1]);
       await someFunc1Tester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.preHandler1.handler).toHaveBeenCalledTimes(1);
@@ -272,7 +295,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
       middlewares.preHandler2.handler.mockClear();
 
       const someFunc2Tester = GeneratedFunctionTester
-        .fromTypeScript(fs.outputFile.mock.calls[1][1]);
+        .fromTypeScript(fsAsync.write.mock.calls[1][1]);
       await someFunc2Tester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.preHandler1.handler).toHaveBeenCalledTimes(1);
@@ -324,9 +347,12 @@ describe('Serverless middleware after:package:initialize hook', () => {
 
       expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('.middleware/someFunc1.handler');
       expect(plugin.serverless.service.functions.someFunc2.handler).toEqual('.middleware/someFunc2.handler');
-      expect(fs.outputFile).toHaveBeenCalledTimes(2);
-      expect(fs.outputFile.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.ts');
-      expect(fs.outputFile.mock.calls[1][0]).toEqual('testPath/.middleware/someFunc2.ts');
+      expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
+      expect(fsAsync.mkdir.mock.calls[0][0]).toEqual('testPath/.middleware');
+      expect(fsAsync.mkdir.mock.calls[0][1]).toEqual({ recursive: true });
+      expect(fsAsync.write).toHaveBeenCalledTimes(2);
+      expect(fsAsync.write.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.ts');
+      expect(fsAsync.write.mock.calls[1][0]).toEqual('testPath/.middleware/someFunc2.ts');
 
       const event = {};
       const context = {};
@@ -356,7 +382,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
       };
 
       const someFunc1Tester = GeneratedFunctionTester
-        .fromTypeScript(fs.outputFile.mock.calls[0][1]);
+        .fromTypeScript(fsAsync.write.mock.calls[0][1]);
       await someFunc1Tester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.preHandler1.handler).toHaveBeenCalledTimes(1);
@@ -392,7 +418,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
       middlewares.preHandler2.handler.mockClear();
       middlewares.catchPreHandler1.handler.mockClear();
       const someFunc2Tester = GeneratedFunctionTester
-        .fromTypeScript(fs.outputFile.mock.calls[1][1]);
+        .fromTypeScript(fsAsync.write.mock.calls[1][1]);
       await someFunc2Tester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.preHandler1.handler).toHaveBeenCalledTimes(1);
@@ -445,9 +471,12 @@ describe('Serverless middleware after:package:initialize hook', () => {
 
       expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('.middleware/someFunc1.handler');
       expect(plugin.serverless.service.functions.someFunc2.handler).toEqual('.middleware/someFunc2.handler');
-      expect(fs.outputFile).toHaveBeenCalledTimes(2);
-      expect(fs.outputFile.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.ts');
-      expect(fs.outputFile.mock.calls[1][0]).toEqual('testPath/.middleware/someFunc2.ts');
+      expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
+      expect(fsAsync.mkdir.mock.calls[0][0]).toEqual('testPath/.middleware');
+      expect(fsAsync.mkdir.mock.calls[0][1]).toEqual({ recursive: true });
+      expect(fsAsync.write).toHaveBeenCalledTimes(2);
+      expect(fsAsync.write.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.ts');
+      expect(fsAsync.write.mock.calls[1][0]).toEqual('testPath/.middleware/someFunc2.ts');
 
       const event = {};
       const context = {};
@@ -478,7 +507,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
       };
 
       const someFunc1Tester = GeneratedFunctionTester
-        .fromTypeScript(fs.outputFile.mock.calls[0][1]);
+        .fromTypeScript(fsAsync.write.mock.calls[0][1]);
       await someFunc1Tester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.preHandler1.handler).toHaveBeenCalledTimes(1);
@@ -504,7 +533,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
       middlewares.preHandler2.handler.mockClear();
       middlewares.catchPreHandler1.handler.mockClear();
       const someFunc2Tester = GeneratedFunctionTester
-        .fromTypeScript(fs.outputFile.mock.calls[1][1]);
+        .fromTypeScript(fsAsync.write.mock.calls[1][1]);
       await someFunc2Tester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.preHandler1.handler).toHaveBeenCalledTimes(1);
@@ -552,9 +581,12 @@ describe('Serverless middleware after:package:initialize hook', () => {
 
       expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('.middleware/someFunc1.handler');
       expect(plugin.serverless.service.functions.someFunc2.handler).toEqual('.middleware/someFunc2.handler');
-      expect(fs.outputFile).toHaveBeenCalledTimes(2);
-      expect(fs.outputFile.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.ts');
-      expect(fs.outputFile.mock.calls[1][0]).toEqual('testPath/.middleware/someFunc2.ts');
+      expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
+      expect(fsAsync.mkdir.mock.calls[0][0]).toEqual('testPath/.middleware');
+      expect(fsAsync.mkdir.mock.calls[0][1]).toEqual({ recursive: true });
+      expect(fsAsync.write).toHaveBeenCalledTimes(2);
+      expect(fsAsync.write.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.ts');
+      expect(fsAsync.write.mock.calls[1][0]).toEqual('testPath/.middleware/someFunc2.ts');
 
       const event = {};
       const context = {};
@@ -568,7 +600,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
       };
 
       const someFunc1Tester = GeneratedFunctionTester
-        .fromTypeScript(fs.outputFile.mock.calls[0][1]);
+        .fromTypeScript(fsAsync.write.mock.calls[0][1]);
       await someFunc1Tester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.middleware1.handler).toHaveBeenCalledTimes(1);
@@ -594,7 +626,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
       middlewares.posHandler2.handler.mockClear();
 
       const someFunc2Tester = GeneratedFunctionTester
-        .fromTypeScript(fs.outputFile.mock.calls[1][1]);
+        .fromTypeScript(fsAsync.write.mock.calls[1][1]);
       await someFunc2Tester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.someFunc2.handler).toHaveBeenCalledTimes(1);
@@ -644,9 +676,12 @@ describe('Serverless middleware after:package:initialize hook', () => {
 
       expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('.middleware/someFunc1.handler');
       expect(plugin.serverless.service.functions.someFunc2.handler).toEqual('.middleware/someFunc2.handler');
-      expect(fs.outputFile).toHaveBeenCalledTimes(2);
-      expect(fs.outputFile.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.ts');
-      expect(fs.outputFile.mock.calls[1][0]).toEqual('testPath/.middleware/someFunc2.ts');
+      expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
+      expect(fsAsync.mkdir.mock.calls[0][0]).toEqual('testPath/.middleware');
+      expect(fsAsync.mkdir.mock.calls[0][1]).toEqual({ recursive: true });
+      expect(fsAsync.write).toHaveBeenCalledTimes(2);
+      expect(fsAsync.write.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.ts');
+      expect(fsAsync.write.mock.calls[1][0]).toEqual('testPath/.middleware/someFunc2.ts');
 
       const event = {};
       const context = {};
@@ -676,7 +711,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
       };
 
       const someFunc1Tester = GeneratedFunctionTester
-        .fromTypeScript(fs.outputFile.mock.calls[0][1]);
+        .fromTypeScript(fsAsync.write.mock.calls[0][1]);
       await someFunc1Tester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.middleware1.handler).toHaveBeenCalledTimes(1);
@@ -711,7 +746,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
       middlewares.posHandler2.handler.mockClear();
       middlewares.catchPosHandler1.handler.mockClear();
       const someFunc2Tester = GeneratedFunctionTester
-        .fromTypeScript(fs.outputFile.mock.calls[1][1]);
+        .fromTypeScript(fsAsync.write.mock.calls[1][1]);
       await someFunc2Tester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.someFunc2.handler).toHaveBeenCalledTimes(1);
@@ -764,9 +799,12 @@ describe('Serverless middleware after:package:initialize hook', () => {
 
       expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('.middleware/someFunc1.handler');
       expect(plugin.serverless.service.functions.someFunc2.handler).toEqual('.middleware/someFunc2.handler');
-      expect(fs.outputFile).toHaveBeenCalledTimes(2);
-      expect(fs.outputFile.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.ts');
-      expect(fs.outputFile.mock.calls[1][0]).toEqual('testPath/.middleware/someFunc2.ts');
+      expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
+      expect(fsAsync.mkdir.mock.calls[0][0]).toEqual('testPath/.middleware');
+      expect(fsAsync.mkdir.mock.calls[0][1]).toEqual({ recursive: true });
+      expect(fsAsync.write).toHaveBeenCalledTimes(2);
+      expect(fsAsync.write.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.ts');
+      expect(fsAsync.write.mock.calls[1][0]).toEqual('testPath/.middleware/someFunc2.ts');
 
       const event = {};
       const context = {};
@@ -796,7 +834,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
       };
 
       const someFunc1Tester = GeneratedFunctionTester
-        .fromTypeScript(fs.outputFile.mock.calls[0][1]);
+        .fromTypeScript(fsAsync.write.mock.calls[0][1]);
       await someFunc1Tester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.middleware1.handler).toHaveBeenCalledTimes(1);
@@ -828,7 +866,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
       middlewares.posHandler2.handler.mockClear();
       middlewares.catchPosHandler1.handler.mockClear();
       const someFunc2Tester = GeneratedFunctionTester
-        .fromTypeScript(fs.outputFile.mock.calls[1][1]);
+        .fromTypeScript(fsAsync.write.mock.calls[1][1]);
       await someFunc2Tester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.someFunc2.handler).toHaveBeenCalledTimes(1);

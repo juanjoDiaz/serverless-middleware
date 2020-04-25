@@ -25,17 +25,15 @@
     "url": "https://github.com/juanjoDiaz/serverless-middleware/issues"
   },
   "homepage": "https://github.com/juanjoDiaz/serverless-middleware",
-  "dependencies": {
-    "fs-extra": "^8.1.0"
-  },
+  "dependencies": {},
   "devDependencies": {
-    "coveralls": "^3.0.9",
+    "coveralls": "^3.1.0",
     "eslint": "^6.8.0",
-    "eslint-config-airbnb-base": "^14.0.0",
-    "eslint-plugin-import": "^2.20.0",
-    "husky": "^4.0.7",
-    "jest": "^24.9.0",
-    "typescript": "^3.7.4"
+    "eslint-config-airbnb-base": "^14.1.0",
+    "eslint-plugin-import": "^2.20.2",
+    "husky": "^4.2.5",
+    "jest": "^25.4.0",
+    "typescript": "^3.8.3"
   },
   "husky": {
     "hooks": {
