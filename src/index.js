@@ -31,6 +31,9 @@ class Middleware {
     this.hooks = {
       'after:package:initialize': this.processHandlers.bind(this),
       'after:package:createDeploymentArtifacts': this.clearResources.bind(this),
+      'before:deploy:function:packageFunction': this.processHandlers.bind(this),
+      'before:invoke:local:invoke': this.processHandlers.bind(this),
+      'after:invoke:local:invoke': this.clearResources.bind(this),
       'before:offline:start:init': this.processHandlers.bind(this),
       'before:offline:start:end': this.clearResources.bind(this),
     };
