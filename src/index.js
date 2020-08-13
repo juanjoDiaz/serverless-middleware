@@ -104,7 +104,7 @@ class Middleware {
       const middlewareBuilder = this.middlewareBuilders[extension];
       const handlerPath = `${this.middlewareOpts.pathFolder}/${fn.name}.${extension}`;
       const handler = middlewareBuilder(handlers, this.middlewareOpts.pathToRoot);
-      await fsAsync.write(handlerPath, handler);
+      await fsAsync.writeFile(handlerPath, handler);
       // eslint-disable-next-line no-param-reassign
       fn.handler = `${this.middlewareOpts.folderName}/${fn.name}.handler`;
     }));
