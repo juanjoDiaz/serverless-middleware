@@ -4,7 +4,7 @@ jest.mock('fs', () => ({
   existsSync: jest.fn(),
   promises: {
     mkdir: jest.fn(),
-    write: jest.fn(),
+    writeFile: jest.fn(),
     rmdir: jest.fn(),
   },
 }));
@@ -17,13 +17,13 @@ const { GeneratedFunctionTester } = require('./utils/generatedFunctionTester');
 const { shouldHaveBeenCalledInOrder } = require('./utils/jest');
 
 fsAsync.mkdir.mockReturnValue(Promise.resolve());
-fsAsync.write.mockReturnValue(Promise.resolve());
+fsAsync.writeFile.mockReturnValue(Promise.resolve());
 
 describe('Serverless middleware after:package:initialize hook', () => {
   beforeEach(() => {
     fs.existsSync.mockImplementation((path) => path.endsWith('.js'));
     fsAsync.mkdir.mockClear();
-    fsAsync.write.mockClear();
+    fsAsync.writeFile.mockClear();
   });
 
   describe('error cases', () => {
@@ -47,7 +47,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
 
       await expect(plugin.hooks['after:package:initialize']()).rejects.toThrow('Serverless Middleware doesn\'t support the "dotnet" runtime');
       expect(fsAsync.mkdir).not.toHaveBeenCalled();
-      expect(fsAsync.write).not.toHaveBeenCalled();
+      expect(fsAsync.writeFile).not.toHaveBeenCalled();
     });
 
     it('should error on unsupported node extensions', async () => {
@@ -70,7 +70,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
 
       await expect(plugin.hooks['after:package:initialize']()).rejects.toThrow('Unsupported handler extension for module middleware1. Only .js, .jsx, .ts and .tsx are supported.');
       expect(fsAsync.mkdir).not.toHaveBeenCalled();
-      expect(fsAsync.write).not.toHaveBeenCalled();
+      expect(fsAsync.writeFile).not.toHaveBeenCalled();
     });
 
     it('should error on invalid handler', async () => {
@@ -93,7 +93,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
 
       await expect(plugin.hooks['after:package:initialize']()).rejects.toThrow('Invalid handler: {"wrong_field":"middleware1.handler"}');
       expect(fsAsync.mkdir).not.toHaveBeenCalled();
-      expect(fsAsync.write).not.toHaveBeenCalled();
+      expect(fsAsync.writeFile).not.toHaveBeenCalled();
     });
   });
 
@@ -122,8 +122,8 @@ describe('Serverless middleware after:package:initialize hook', () => {
       expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
       expect(fsAsync.mkdir.mock.calls[0][0]).toEqual('testPath/.middleware');
       expect(fsAsync.mkdir.mock.calls[0][1]).toEqual({ recursive: true });
-      expect(fsAsync.write).toHaveBeenCalledTimes(1);
-      expect(fsAsync.write.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.js');
+      expect(fsAsync.writeFile).toHaveBeenCalledTimes(1);
+      expect(fsAsync.writeFile.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.js');
 
       const event = {};
       const context = {};
@@ -133,7 +133,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
         someFunc1: { handler: jest.fn().mockImplementation(() => Promise.resolve()) },
       };
 
-      const functionTester = new GeneratedFunctionTester(fsAsync.write.mock.calls[0][1]);
+      const functionTester = new GeneratedFunctionTester(fsAsync.writeFile.mock.calls[0][1]);
       await functionTester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.middleware1.handler).toHaveBeenCalledTimes(1);
@@ -180,8 +180,8 @@ describe('Serverless middleware after:package:initialize hook', () => {
       expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
       expect(fsAsync.mkdir.mock.calls[0][0]).toEqual('testPath/.middleware');
       expect(fsAsync.mkdir.mock.calls[0][1]).toEqual({ recursive: true });
-      expect(fsAsync.write).toHaveBeenCalledTimes(1);
-      expect(fsAsync.write.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.js');
+      expect(fsAsync.writeFile).toHaveBeenCalledTimes(1);
+      expect(fsAsync.writeFile.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.js');
 
       const event = {};
       const context = {};
@@ -200,7 +200,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
         someFunc1: { handler: jest.fn().mockImplementation(() => Promise.resolve()) },
       };
 
-      const functionTester = new GeneratedFunctionTester(fsAsync.write.mock.calls[0][1]);
+      const functionTester = new GeneratedFunctionTester(fsAsync.writeFile.mock.calls[0][1]);
       await functionTester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.middleware1.handler).toHaveBeenCalledTimes(1);
@@ -254,8 +254,8 @@ describe('Serverless middleware after:package:initialize hook', () => {
       expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
       expect(fsAsync.mkdir.mock.calls[0][0]).toEqual('testPath/.middleware');
       expect(fsAsync.mkdir.mock.calls[0][1]).toEqual({ recursive: true });
-      expect(fsAsync.write).toHaveBeenCalledTimes(1);
-      expect(fsAsync.write.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.js');
+      expect(fsAsync.writeFile).toHaveBeenCalledTimes(1);
+      expect(fsAsync.writeFile.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.js');
 
       const event = {};
       const context = {};
@@ -274,7 +274,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
         someFunc1: { handler: jest.fn().mockImplementation(() => Promise.resolve()) },
       };
 
-      const functionTester = new GeneratedFunctionTester(fsAsync.write.mock.calls[0][1]);
+      const functionTester = new GeneratedFunctionTester(fsAsync.writeFile.mock.calls[0][1]);
       await functionTester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.middleware1.handler).toHaveBeenCalledTimes(1);
@@ -323,9 +323,9 @@ describe('Serverless middleware after:package:initialize hook', () => {
       expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
       expect(fsAsync.mkdir.mock.calls[0][0]).toEqual('testPath/.middleware');
       expect(fsAsync.mkdir.mock.calls[0][1]).toEqual({ recursive: true });
-      expect(fsAsync.write).toHaveBeenCalledTimes(2);
-      expect(fsAsync.write.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.js');
-      expect(fsAsync.write.mock.calls[1][0]).toEqual('testPath/.middleware/someFunc2.js');
+      expect(fsAsync.writeFile).toHaveBeenCalledTimes(2);
+      expect(fsAsync.writeFile.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.js');
+      expect(fsAsync.writeFile.mock.calls[1][0]).toEqual('testPath/.middleware/someFunc2.js');
 
       const event = {};
       const context = {};
@@ -338,7 +338,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
         someFunc2: { handler: jest.fn().mockImplementation(() => Promise.resolve()) },
       };
 
-      const someFunc1Tester = new GeneratedFunctionTester(fsAsync.write.mock.calls[0][1]);
+      const someFunc1Tester = new GeneratedFunctionTester(fsAsync.writeFile.mock.calls[0][1]);
       await someFunc1Tester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.preHandler1.handler).toHaveBeenCalledTimes(1);
@@ -363,7 +363,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
       middlewares.preHandler1.handler.mockClear();
       middlewares.preHandler2.handler.mockClear();
 
-      const someFunc2Tester = new GeneratedFunctionTester(fsAsync.write.mock.calls[1][1]);
+      const someFunc2Tester = new GeneratedFunctionTester(fsAsync.writeFile.mock.calls[1][1]);
       await someFunc2Tester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.preHandler1.handler).toHaveBeenCalledTimes(1);
@@ -418,9 +418,9 @@ describe('Serverless middleware after:package:initialize hook', () => {
       expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
       expect(fsAsync.mkdir.mock.calls[0][0]).toEqual('testPath/.middleware');
       expect(fsAsync.mkdir.mock.calls[0][1]).toEqual({ recursive: true });
-      expect(fsAsync.write).toHaveBeenCalledTimes(2);
-      expect(fsAsync.write.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.js');
-      expect(fsAsync.write.mock.calls[1][0]).toEqual('testPath/.middleware/someFunc2.js');
+      expect(fsAsync.writeFile).toHaveBeenCalledTimes(2);
+      expect(fsAsync.writeFile.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.js');
+      expect(fsAsync.writeFile.mock.calls[1][0]).toEqual('testPath/.middleware/someFunc2.js');
 
       const event = {};
       const context = {};
@@ -449,7 +449,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
         someFunc2: { handler: jest.fn().mockImplementation(() => Promise.resolve()) },
       };
 
-      const someFunc1Tester = new GeneratedFunctionTester(fsAsync.write.mock.calls[0][1]);
+      const someFunc1Tester = new GeneratedFunctionTester(fsAsync.writeFile.mock.calls[0][1]);
       await someFunc1Tester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.preHandler1.handler).toHaveBeenCalledTimes(1);
@@ -484,7 +484,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
       middlewares.preHandler1.handler.mockClear();
       middlewares.preHandler2.handler.mockClear();
       middlewares.catchPreHandler1.handler.mockClear();
-      const someFunc2Tester = new GeneratedFunctionTester(fsAsync.write.mock.calls[1][1]);
+      const someFunc2Tester = new GeneratedFunctionTester(fsAsync.writeFile.mock.calls[1][1]);
       await someFunc2Tester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.preHandler1.handler).toHaveBeenCalledTimes(1);
@@ -540,9 +540,9 @@ describe('Serverless middleware after:package:initialize hook', () => {
       expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
       expect(fsAsync.mkdir.mock.calls[0][0]).toEqual('testPath/.middleware');
       expect(fsAsync.mkdir.mock.calls[0][1]).toEqual({ recursive: true });
-      expect(fsAsync.write).toHaveBeenCalledTimes(2);
-      expect(fsAsync.write.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.js');
-      expect(fsAsync.write.mock.calls[1][0]).toEqual('testPath/.middleware/someFunc2.js');
+      expect(fsAsync.writeFile).toHaveBeenCalledTimes(2);
+      expect(fsAsync.writeFile.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.js');
+      expect(fsAsync.writeFile.mock.calls[1][0]).toEqual('testPath/.middleware/someFunc2.js');
 
       const event = {};
       const context = {};
@@ -572,7 +572,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
         someFunc2: { handler: jest.fn().mockImplementation(() => Promise.resolve()) },
       };
 
-      const someFunc1Tester = new GeneratedFunctionTester(fsAsync.write.mock.calls[0][1]);
+      const someFunc1Tester = new GeneratedFunctionTester(fsAsync.writeFile.mock.calls[0][1]);
       await someFunc1Tester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.preHandler1.handler).toHaveBeenCalledTimes(1);
@@ -597,7 +597,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
       middlewares.preHandler1.handler.mockClear();
       middlewares.preHandler2.handler.mockClear();
       middlewares.catchPreHandler1.handler.mockClear();
-      const someFunc2Tester = new GeneratedFunctionTester(fsAsync.write.mock.calls[1][1]);
+      const someFunc2Tester = new GeneratedFunctionTester(fsAsync.writeFile.mock.calls[1][1]);
       await someFunc2Tester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.preHandler1.handler).toHaveBeenCalledTimes(1);
@@ -648,9 +648,9 @@ describe('Serverless middleware after:package:initialize hook', () => {
       expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
       expect(fsAsync.mkdir.mock.calls[0][0]).toEqual('testPath/.middleware');
       expect(fsAsync.mkdir.mock.calls[0][1]).toEqual({ recursive: true });
-      expect(fsAsync.write).toHaveBeenCalledTimes(2);
-      expect(fsAsync.write.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.js');
-      expect(fsAsync.write.mock.calls[1][0]).toEqual('testPath/.middleware/someFunc2.js');
+      expect(fsAsync.writeFile).toHaveBeenCalledTimes(2);
+      expect(fsAsync.writeFile.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.js');
+      expect(fsAsync.writeFile.mock.calls[1][0]).toEqual('testPath/.middleware/someFunc2.js');
 
       const event = {};
       const context = {};
@@ -663,7 +663,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
         someFunc2: { handler: jest.fn().mockImplementation(() => Promise.resolve()) },
       };
 
-      const someFunc1Tester = new GeneratedFunctionTester(fsAsync.write.mock.calls[0][1]);
+      const someFunc1Tester = new GeneratedFunctionTester(fsAsync.writeFile.mock.calls[0][1]);
       await someFunc1Tester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.middleware1.handler).toHaveBeenCalledTimes(1);
@@ -688,7 +688,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
       middlewares.posHandler1.handler.mockClear();
       middlewares.posHandler2.handler.mockClear();
 
-      const someFunc2Tester = new GeneratedFunctionTester(fsAsync.write.mock.calls[1][1]);
+      const someFunc2Tester = new GeneratedFunctionTester(fsAsync.writeFile.mock.calls[1][1]);
       await someFunc2Tester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.someFunc2.handler).toHaveBeenCalledTimes(1);
@@ -741,9 +741,9 @@ describe('Serverless middleware after:package:initialize hook', () => {
       expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
       expect(fsAsync.mkdir.mock.calls[0][0]).toEqual('testPath/.middleware');
       expect(fsAsync.mkdir.mock.calls[0][1]).toEqual({ recursive: true });
-      expect(fsAsync.write).toHaveBeenCalledTimes(2);
-      expect(fsAsync.write.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.js');
-      expect(fsAsync.write.mock.calls[1][0]).toEqual('testPath/.middleware/someFunc2.js');
+      expect(fsAsync.writeFile).toHaveBeenCalledTimes(2);
+      expect(fsAsync.writeFile.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.js');
+      expect(fsAsync.writeFile.mock.calls[1][0]).toEqual('testPath/.middleware/someFunc2.js');
 
       const event = {};
       const context = {};
@@ -772,7 +772,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
         someFunc2: { handler: jest.fn().mockImplementation(() => Promise.resolve()) },
       };
 
-      const someFunc1Tester = new GeneratedFunctionTester(fsAsync.write.mock.calls[0][1]);
+      const someFunc1Tester = new GeneratedFunctionTester(fsAsync.writeFile.mock.calls[0][1]);
       await someFunc1Tester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.middleware1.handler).toHaveBeenCalledTimes(1);
@@ -806,7 +806,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
       middlewares.posHandler1.handler.mockClear();
       middlewares.posHandler2.handler.mockClear();
       middlewares.catchPosHandler1.handler.mockClear();
-      const someFunc2Tester = new GeneratedFunctionTester(fsAsync.write.mock.calls[1][1]);
+      const someFunc2Tester = new GeneratedFunctionTester(fsAsync.writeFile.mock.calls[1][1]);
       await someFunc2Tester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.someFunc2.handler).toHaveBeenCalledTimes(1);
@@ -862,9 +862,9 @@ describe('Serverless middleware after:package:initialize hook', () => {
       expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
       expect(fsAsync.mkdir.mock.calls[0][0]).toEqual('testPath/.middleware');
       expect(fsAsync.mkdir.mock.calls[0][1]).toEqual({ recursive: true });
-      expect(fsAsync.write).toHaveBeenCalledTimes(2);
-      expect(fsAsync.write.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.js');
-      expect(fsAsync.write.mock.calls[1][0]).toEqual('testPath/.middleware/someFunc2.js');
+      expect(fsAsync.writeFile).toHaveBeenCalledTimes(2);
+      expect(fsAsync.writeFile.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.js');
+      expect(fsAsync.writeFile.mock.calls[1][0]).toEqual('testPath/.middleware/someFunc2.js');
 
       const event = {};
       const context = {};
@@ -893,7 +893,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
         someFunc2: { handler: jest.fn().mockImplementation(() => Promise.resolve()) },
       };
 
-      const someFunc1Tester = new GeneratedFunctionTester(fsAsync.write.mock.calls[0][1]);
+      const someFunc1Tester = new GeneratedFunctionTester(fsAsync.writeFile.mock.calls[0][1]);
       await someFunc1Tester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.middleware1.handler).toHaveBeenCalledTimes(1);
@@ -924,7 +924,7 @@ describe('Serverless middleware after:package:initialize hook', () => {
       middlewares.posHandler1.handler.mockClear();
       middlewares.posHandler2.handler.mockClear();
       middlewares.catchPosHandler1.handler.mockClear();
-      const someFunc2Tester = new GeneratedFunctionTester(fsAsync.write.mock.calls[1][1]);
+      const someFunc2Tester = new GeneratedFunctionTester(fsAsync.writeFile.mock.calls[1][1]);
       await someFunc2Tester.executeMiddlewareFunction(event, context, middlewares);
 
       expect(middlewares.someFunc2.handler).toHaveBeenCalledTimes(1);

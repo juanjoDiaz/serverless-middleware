@@ -13,7 +13,7 @@ Serverless plugin to allow middleware handlers configured directly in serverless
 ## Requirements:
 * Serverless
 * AWS provider
-* Node.js 8.10+
+* Node.js 10+
 
 ### Supported runtimes
 
