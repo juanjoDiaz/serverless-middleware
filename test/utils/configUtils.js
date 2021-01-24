@@ -1,11 +1,11 @@
-function getServerlessConfig (serverless = {}) {
+function getServerlessConfig(serverless = {}) {
   return {
     getProvider: serverless.getProvider || (() => {}),
     config: {
-      servicePath: (serverless.config && serverless.config.servicePath) ? serverless.config.servicePath : 'testPath'
+      servicePath: (serverless.config && serverless.config.servicePath) ? serverless.config.servicePath : 'testPath',
     },
     cli: {
-      log() {}
+      log() {},
     },
     service: {
       provider: (serverless.service && serverless.service.provider)
@@ -16,13 +16,15 @@ function getServerlessConfig (serverless = {}) {
         : { stage: '', region: '' },
       service: 'middleware-test',
       custom: serverless.service ? serverless.service.custom : undefined,
-      getAllFunctions() { return Object.keys(this.functions) },
-      getFunction(name) { return this.functions[name] },
-      functions: (serverless.service && serverless.service.functions) ? serverless.service.functions : {}
-    }
+      getAllFunctions() { return Object.keys(this.functions); },
+      getFunction(name) { return this.functions[name]; },
+      functions: (serverless.service && serverless.service.functions)
+        ? serverless.service.functions
+        : {},
+    },
   };
-};
+}
 
 module.exports = {
-  getServerlessConfig
+  getServerlessConfig,
 };

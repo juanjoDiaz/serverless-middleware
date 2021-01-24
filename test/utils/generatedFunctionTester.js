@@ -7,11 +7,12 @@ class GeneratedFunctionTester {
 
   static fromTypeScript(fn) {
     return new GeneratedFunctionTester(transpileModule(fn, {
-      compilerOptions: { module: ModuleKind.CommonJS }
+      compilerOptions: { module: ModuleKind.CommonJS },
     }).outputText);
   }
 
   get middlewareFunction() {
+    // eslint-disable-next-line no-new-func
     return new Function('event', 'context', 'dependencies', `
       const require = (dependencyName) => {
         const dependency = dependencies[dependencyName.replace('../', '')];
@@ -31,6 +32,6 @@ class GeneratedFunctionTester {
   async executeMiddlewareFunction(event, context, dependencies) {
     await this.middlewareFunction(event, context, dependencies);
   }
-} 
+}
 
 module.exports = { GeneratedFunctionTester };

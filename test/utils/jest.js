@@ -1,3 +1,5 @@
+/* global expect */
+
 function shouldHaveBeenCalledInOrder(mocks) {
   mocks.reduce((prevInvocation, mockFn) => {
     expect(mockFn.mock.invocationCallOrder[0]).toBeGreaterThan(prevInvocation);
@@ -6,5 +8,5 @@ function shouldHaveBeenCalledInOrder(mocks) {
 }
 
 module.exports = {
-  shouldHaveBeenCalledInOrder
+  shouldHaveBeenCalledInOrder,
 };
