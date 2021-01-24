@@ -97,6 +97,22 @@ describe('Serverless middleware after:package:initialize hook', () => {
     });
   });
 
+  describe('without functions', () => {
+    it('should process handlers that contain arrays and do nothing with standard handlers', async () => {
+      const serverless = getServerlessConfig({
+        service: {
+          functions: {},
+        },
+      });
+      const plugin = new Middleware(serverless, {});
+
+      await plugin.hooks['after:package:initialize']();
+
+      expect(fsAsync.mkdir).not.toHaveBeenCalled();
+      expect(fsAsync.writeFile).not.toHaveBeenCalled();
+    });
+  });
+
   describe('without pre/pos', () => {
     it('should process handlers that contain arrays and do nothing with standard handlers', async () => {
       const serverless = getServerlessConfig({
