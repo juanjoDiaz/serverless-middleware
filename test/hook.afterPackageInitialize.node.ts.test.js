@@ -50,9 +50,9 @@ describe('Serverless middleware after:package:initialize hook', () => {
       expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('.middleware/someFunc1.handler');
       expect(plugin.serverless.service.functions.someFunc2.handler).toEqual('someFunc2.handler');
       expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
-      expect(fsAsync.mkdir.mock.calls[0][0]).toEqual('testPath/.middleware');
+      expect(fsAsync.mkdir).toHaveBeenNthCalledWith(1, 'testPath/.middleware', { recursive: true });
       expect(fsAsync.writeFile).toHaveBeenCalledTimes(1);
-      expect(fsAsync.writeFile.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.ts');
+      expect(fsAsync.writeFile).toHaveBeenNthCalledWith(1, 'testPath/.middleware/someFunc1.ts', expect.any(String));
 
       const event = {};
       const context = {};
@@ -108,9 +108,9 @@ describe('Serverless middleware after:package:initialize hook', () => {
       expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('.middleware/someFunc1.handler');
       expect(plugin.serverless.service.functions.someFunc2.handler).toEqual('someFunc2.handler');
       expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
-      expect(fsAsync.mkdir.mock.calls[0][0]).toEqual('testPath/.middleware');
+      expect(fsAsync.mkdir).toHaveBeenNthCalledWith(1, 'testPath/.middleware', { recursive: true });
       expect(fsAsync.writeFile).toHaveBeenCalledTimes(1);
-      expect(fsAsync.writeFile.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.ts');
+      expect(fsAsync.writeFile).toHaveBeenNthCalledWith(1, 'testPath/.middleware/someFunc1.ts', expect.any(String));
 
       const event = {};
       const context = {};
@@ -182,9 +182,9 @@ describe('Serverless middleware after:package:initialize hook', () => {
       expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('.middleware/someFunc1.handler');
       expect(plugin.serverless.service.functions.someFunc2.handler).toEqual('someFunc2.handler');
       expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
-      expect(fsAsync.mkdir.mock.calls[0][0]).toEqual('testPath/.middleware');
+      expect(fsAsync.mkdir).toHaveBeenNthCalledWith(1, 'testPath/.middleware', { recursive: true });
       expect(fsAsync.writeFile).toHaveBeenCalledTimes(1);
-      expect(fsAsync.writeFile.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.ts');
+      expect(fsAsync.writeFile).toHaveBeenNthCalledWith(1, 'testPath/.middleware/someFunc1.ts', expect.any(String));
 
       const event = {};
       const context = {};
@@ -251,11 +251,10 @@ describe('Serverless middleware after:package:initialize hook', () => {
       expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('.middleware/someFunc1.handler');
       expect(plugin.serverless.service.functions.someFunc2.handler).toEqual('.middleware/someFunc2.handler');
       expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
-      expect(fsAsync.mkdir.mock.calls[0][0]).toEqual('testPath/.middleware');
-      expect(fsAsync.mkdir.mock.calls[0][1]).toEqual({ recursive: true });
+      expect(fsAsync.mkdir).toHaveBeenNthCalledWith(1, 'testPath/.middleware', { recursive: true });
       expect(fsAsync.writeFile).toHaveBeenCalledTimes(2);
-      expect(fsAsync.writeFile.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.ts');
-      expect(fsAsync.writeFile.mock.calls[1][0]).toEqual('testPath/.middleware/someFunc2.ts');
+      expect(fsAsync.writeFile).toHaveBeenNthCalledWith(1, 'testPath/.middleware/someFunc1.ts', expect.any(String));
+      expect(fsAsync.writeFile).toHaveBeenNthCalledWith(2, 'testPath/.middleware/someFunc2.ts', expect.any(String));
 
       const event = {};
       const context = {};
@@ -348,11 +347,10 @@ describe('Serverless middleware after:package:initialize hook', () => {
       expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('.middleware/someFunc1.handler');
       expect(plugin.serverless.service.functions.someFunc2.handler).toEqual('.middleware/someFunc2.handler');
       expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
-      expect(fsAsync.mkdir.mock.calls[0][0]).toEqual('testPath/.middleware');
-      expect(fsAsync.mkdir.mock.calls[0][1]).toEqual({ recursive: true });
+      expect(fsAsync.mkdir).toHaveBeenNthCalledWith(1, 'testPath/.middleware', { recursive: true });
       expect(fsAsync.writeFile).toHaveBeenCalledTimes(2);
-      expect(fsAsync.writeFile.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.ts');
-      expect(fsAsync.writeFile.mock.calls[1][0]).toEqual('testPath/.middleware/someFunc2.ts');
+      expect(fsAsync.writeFile).toHaveBeenNthCalledWith(1, 'testPath/.middleware/someFunc1.ts', expect.any(String));
+      expect(fsAsync.writeFile).toHaveBeenNthCalledWith(2, 'testPath/.middleware/someFunc2.ts', expect.any(String));
 
       const event = {};
       const context = {};
@@ -472,11 +470,10 @@ describe('Serverless middleware after:package:initialize hook', () => {
       expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('.middleware/someFunc1.handler');
       expect(plugin.serverless.service.functions.someFunc2.handler).toEqual('.middleware/someFunc2.handler');
       expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
-      expect(fsAsync.mkdir.mock.calls[0][0]).toEqual('testPath/.middleware');
-      expect(fsAsync.mkdir.mock.calls[0][1]).toEqual({ recursive: true });
+      expect(fsAsync.mkdir).toHaveBeenNthCalledWith(1, 'testPath/.middleware', { recursive: true });
       expect(fsAsync.writeFile).toHaveBeenCalledTimes(2);
-      expect(fsAsync.writeFile.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.ts');
-      expect(fsAsync.writeFile.mock.calls[1][0]).toEqual('testPath/.middleware/someFunc2.ts');
+      expect(fsAsync.writeFile).toHaveBeenNthCalledWith(1, 'testPath/.middleware/someFunc1.ts', expect.any(String));
+      expect(fsAsync.writeFile).toHaveBeenNthCalledWith(2, 'testPath/.middleware/someFunc2.ts', expect.any(String));
 
       const event = {};
       const context = {};
@@ -582,11 +579,10 @@ describe('Serverless middleware after:package:initialize hook', () => {
       expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('.middleware/someFunc1.handler');
       expect(plugin.serverless.service.functions.someFunc2.handler).toEqual('.middleware/someFunc2.handler');
       expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
-      expect(fsAsync.mkdir.mock.calls[0][0]).toEqual('testPath/.middleware');
-      expect(fsAsync.mkdir.mock.calls[0][1]).toEqual({ recursive: true });
+      expect(fsAsync.mkdir).toHaveBeenNthCalledWith(1, 'testPath/.middleware', { recursive: true });
       expect(fsAsync.writeFile).toHaveBeenCalledTimes(2);
-      expect(fsAsync.writeFile.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.ts');
-      expect(fsAsync.writeFile.mock.calls[1][0]).toEqual('testPath/.middleware/someFunc2.ts');
+      expect(fsAsync.writeFile).toHaveBeenNthCalledWith(1, 'testPath/.middleware/someFunc1.ts', expect.any(String));
+      expect(fsAsync.writeFile).toHaveBeenNthCalledWith(2, 'testPath/.middleware/someFunc2.ts', expect.any(String));
 
       const event = {};
       const context = {};
@@ -677,11 +673,10 @@ describe('Serverless middleware after:package:initialize hook', () => {
       expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('.middleware/someFunc1.handler');
       expect(plugin.serverless.service.functions.someFunc2.handler).toEqual('.middleware/someFunc2.handler');
       expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
-      expect(fsAsync.mkdir.mock.calls[0][0]).toEqual('testPath/.middleware');
-      expect(fsAsync.mkdir.mock.calls[0][1]).toEqual({ recursive: true });
+      expect(fsAsync.mkdir).toHaveBeenNthCalledWith(1, 'testPath/.middleware', { recursive: true });
       expect(fsAsync.writeFile).toHaveBeenCalledTimes(2);
-      expect(fsAsync.writeFile.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.ts');
-      expect(fsAsync.writeFile.mock.calls[1][0]).toEqual('testPath/.middleware/someFunc2.ts');
+      expect(fsAsync.writeFile).toHaveBeenNthCalledWith(1, 'testPath/.middleware/someFunc1.ts', expect.any(String));
+      expect(fsAsync.writeFile).toHaveBeenNthCalledWith(2, 'testPath/.middleware/someFunc2.ts', expect.any(String));
 
       const event = {};
       const context = {};
@@ -800,11 +795,10 @@ describe('Serverless middleware after:package:initialize hook', () => {
       expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('.middleware/someFunc1.handler');
       expect(plugin.serverless.service.functions.someFunc2.handler).toEqual('.middleware/someFunc2.handler');
       expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
-      expect(fsAsync.mkdir.mock.calls[0][0]).toEqual('testPath/.middleware');
-      expect(fsAsync.mkdir.mock.calls[0][1]).toEqual({ recursive: true });
+      expect(fsAsync.mkdir).toHaveBeenNthCalledWith(1, 'testPath/.middleware', { recursive: true });
       expect(fsAsync.writeFile).toHaveBeenCalledTimes(2);
-      expect(fsAsync.writeFile.mock.calls[0][0]).toEqual('testPath/.middleware/someFunc1.ts');
-      expect(fsAsync.writeFile.mock.calls[1][0]).toEqual('testPath/.middleware/someFunc2.ts');
+      expect(fsAsync.writeFile).toHaveBeenNthCalledWith(1, 'testPath/.middleware/someFunc1.ts', expect.any(String));
+      expect(fsAsync.writeFile).toHaveBeenNthCalledWith(2, 'testPath/.middleware/someFunc2.ts', expect.any(String));
 
       const event = {};
       const context = {};
