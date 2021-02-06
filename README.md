@@ -69,7 +69,7 @@ functions:
     handler:
       - auth.authenticate
       - auth.authorize
-      - then: myFunction.handler # `then:` is unnecesary here.
+      - then: myFunction.handler # `then:` is unnecessary here.
       - catch: utils.handlerError
       - # or both can be combined
         then: logger.log
