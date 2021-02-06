@@ -9,6 +9,7 @@ jest.mock('fs', () => ({
   },
 }));
 const fsAsync = require('fs').promises;
+const path = require('path');
 const Middleware = require('../src/index');
 const { getServerlessConfig } = require('./utils/configUtils');
 
@@ -19,6 +20,27 @@ describe.each([
   'before:offline:start:end',
 ])('Serverless middleware plugin %s hook', (hook) => {
   beforeEach(() => fsAsync.rmdir.mockClear());
+
+  it('Should clean the temporary folder by default', async () => {
+    const mockProvider = { request: jest.fn(() => Promise.resolve()) };
+    const serverless = getServerlessConfig({
+      getProvider() { return mockProvider; },
+      service: {
+        functions: {
+          someFunc1: {
+            name: 'someFunc1',
+            handler: ['middleware1.handler', 'middleware2.handler', 'handler.handler'],
+          },
+        },
+      },
+    });
+    const plugin = new Middleware(serverless, {});
+
+    await plugin.hooks[hook]();
+
+    expect(fsAsync.rmdir).toHaveBeenCalledTimes(1);
+    expect(fsAsync.rmdir).toHaveBeenCalledWith('testPath/.middleware');
+  });
 
   it('Should clean the temporary folder if cleanFolder is set to true', async () => {
     const mockProvider = { request: jest.fn(() => Promise.resolve()) };
@@ -71,6 +93,38 @@ describe.each([
 
     expect(fsAsync.rmdir).toHaveBeenCalledTimes(1);
     expect(fsAsync.rmdir).toHaveBeenCalledWith('testPath/test-folder');
+  });
+
+  it('Should ignore cleaning the custom temporary folder if there was nothing to clean', async () => {
+    const err = new Error('Folder doesn\'t exist');
+    err.code = 'ENOENT';
+    fsAsync.rmdir.mockRejectedValueOnce(err);
+    const serverless = getServerlessConfig({
+      service: {
+        functions: { someFunc1: { name: 'someFunc1' }, someFunc2: { name: 'someFunc2' } },
+      },
+    });
+    const plugin = new Middleware(serverless, {});
+
+    await plugin.hooks[hook]();
+
+    expect(fsAsync.rmdir).toHaveBeenCalledTimes(1);
+    expect(fsAsync.rmdir).toHaveBeenCalledWith(path.join('testPath', '.middleware'));
+  });
+
+  it('Should not error if couldn\'t clean up the custom temporary folder', async () => {
+    fsAsync.rmdir.mockRejectedValueOnce(new Error('Folder couldn\'t be cleaned'));
+    const serverless = getServerlessConfig({
+      service: {
+        functions: { someFunc1: { name: 'someFunc1' }, someFunc2: { name: 'someFunc2' } },
+      },
+    });
+    const plugin = new Middleware(serverless, {});
+
+    await plugin.hooks[hook]();
+
+    expect(fsAsync.rmdir).toHaveBeenCalledTimes(1);
+    expect(fsAsync.rmdir).toHaveBeenCalledWith(path.join('testPath', '.middleware'));
   });
 
   it('Should not clean the temporary folder if cleanFolder is set to false', async () => {
