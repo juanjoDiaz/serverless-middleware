@@ -10,7 +10,7 @@ function getServerlessConfig(serverless = {}) {
     service: {
       provider: (serverless.service && serverless.service.provider)
         ? serverless.service.provider
-        : { stage: '', region: '', runtime: 'nodejs12.x' },
+        : { stage: '', region: '', runtime: 'nodejs14.x' },
       defaults: (serverless.service && serverless.service.defaults)
         ? serverless.service.defaults
         : { stage: '', region: '' },

@@ -19,6 +19,7 @@ Serverless plugin to allow middleware handlers configured directly in serverless
 
 - [x] nodejs10.x (both Javascript and Typescript)
 - [x] nodejs12.x (both Javascript and Typescript)
+- [x] nodejs14.x (both Javascript and Typescript)
 - [ ] dotnetcore2.1
 - [ ] java8
 - [ ] java11
@@ -61,7 +62,7 @@ For example:
 ```yaml
 provider:
   name: aws
-  runtime: nodejs12.x
+  runtime: nodejs14.x
   
 functions:
   myFunction:
@@ -119,7 +120,7 @@ For example:
 
 provider:
   name: aws
-  runtime: nodejs12.x
+  runtime: nodejs14.x
 
 custom:
   middleware:
