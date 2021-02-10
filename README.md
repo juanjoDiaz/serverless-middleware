@@ -5,7 +5,6 @@ Serverless Middleware
 [![npm monthly downloads][npm-downloads-badge]][npm-version-badge-url]
 [![Build Status][travis-badge]][travis-badge-url]
 [![Coverage Status][coveralls-badge]][coveralls-badge-url]
-[![Dependency Status][dev-badge]][dev-badge-url]
 [![license](https://img.shields.io/npm/l/serverless-middleware.svg)](https://raw.githubusercontent.com/juanjoDiaz/serverless-middleware/master/LICENSE)
 
 Serverless plugin to allow middleware handlers configured directly in serverless.yaml
@@ -182,5 +181,3 @@ This software is released under the MIT license. See [the license file](LICENSE)
 [travis-badge-url]: https://travis-ci.org/juanjoDiaz/serverless-middleware
 [coveralls-badge]: https://coveralls.io/repos/juanjoDiaz/serverless-middleware/badge.svg?branch=master
 [coveralls-badge-url]: https://coveralls.io/r/juanjoDiaz/serverless-middleware?branch=master
-[dev-badge]: https://david-dm.org/juanjoDiaz/serverless-middleware.svg
-[dev-badge-url]: https://david-dm.org/juanjoDiaz/serverless-middleware
