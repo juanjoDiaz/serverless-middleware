@@ -15,7 +15,7 @@ function getServerlessConfig(serverlessOverrides = {}) {
       log: (serverless.config.cli && serverless.config.cli.log) || (() => {}),
     },
     service: {
-      provider: serverless.service.provider || { stage: '', region: '', runtime: 'nodejs14.x' },
+      provider: serverless.service.provider || { stage: '', region: '', runtime: 'nodejs10.x' },
       defaults: serverless.service.defaults || { stage: '', region: '' },
       service: 'middleware-test',
       custom: serverless.service.custom,
