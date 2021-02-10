@@ -200,7 +200,7 @@ class Middleware {
     try {
       this.middlewareOpts = this.middlewareOpts || this.configPlugin(this.serverless.service);
       if (this.middlewareOpts.cleanFolder) {
-        await fsAsync.rmdir(this.middlewareOpts.pathFolder);
+        await fsAsync.rmdir(this.middlewareOpts.pathFolder, { recursive: true });
       }
     } catch (err) {
       if (err.code !== 'ENOENT') {
