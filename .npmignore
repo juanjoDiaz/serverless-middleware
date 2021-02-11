@@ -3,5 +3,6 @@ test
 coverage
 
 #build tools
-.travis.yml
+.github
+.husky
 .eslintrc.js
