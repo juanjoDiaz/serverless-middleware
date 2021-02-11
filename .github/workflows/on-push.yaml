@@ -4,11 +4,17 @@ on: [push, pull_request]
 
 jobs:
   test:
-    runs-on: Ubuntu-20.04
+    runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
+        os: [ubuntu-latest]
         node-version: [10.x, 12.x, 13.x, 14.x, 15.x]
+        include:
+          - os: windows-latest
+            node-version: 14.x
+          - os: macos-latest
+            node-version: 14.x
 
     steps:
     - uses: actions/checkout@v2
@@ -27,6 +33,7 @@ jobs:
           ${{ runner.OS }}-
     - run: npm ci
     - run: npm run lint
+      if: ${{ runner.OS == 'ubuntu-latest' }} # it fails on Windows
     - name: Unit tests
       run: npm run test-with-coverage
     - name: Coveralls Parallel
@@ -37,7 +44,7 @@ jobs:
         parallel: true
   finish:
     needs: test
-    runs-on: Ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
     - name: Coveralls Finished
       uses: coverallsapp/github-action@master
