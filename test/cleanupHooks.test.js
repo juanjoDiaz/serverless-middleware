@@ -44,7 +44,7 @@ describe.each([
     await plugin.hooks[hook]();
 
     expect(fsAsync.rmdir).toHaveBeenCalledTimes(1);
-    expect(fsAsync.rmdir).toHaveBeenCalledWith('testPath/.middleware', { recursive: true });
+    expect(fsAsync.rmdir).toHaveBeenCalledWith(path.join('testPath', '.middleware'), { recursive: true });
     expect(serverless.cli.log).not.toHaveBeenCalledWith(expect.stringMatching(/^Middleware: Couldn't clean up temporary folder .*/));
   });
 
@@ -76,7 +76,7 @@ describe.each([
     await plugin.hooks[hook]();
 
     expect(fsAsync.rmdir).toHaveBeenCalledTimes(1);
-    expect(fsAsync.rmdir).toHaveBeenCalledWith('testPath/.middleware', { recursive: true });
+    expect(fsAsync.rmdir).toHaveBeenCalledWith(path.join('testPath', '.middleware'), { recursive: true });
     expect(serverless.cli.log).not.toHaveBeenCalledWith(expect.stringMatching(/^Middleware: Couldn't clean up temporary folder .*/));
   });
 
@@ -109,7 +109,7 @@ describe.each([
     await plugin.hooks[hook]();
 
     expect(fsAsync.rmdir).toHaveBeenCalledTimes(1);
-    expect(fsAsync.rmdir).toHaveBeenCalledWith('testPath/test-folder', { recursive: true });
+    expect(fsAsync.rmdir).toHaveBeenCalledWith(path.join('testPath', 'test-folder'), { recursive: true });
     expect(serverless.cli.log).not.toHaveBeenCalledWith(expect.stringMatching(/^Middleware: Couldn't clean up temporary folder .*/));
   });
 

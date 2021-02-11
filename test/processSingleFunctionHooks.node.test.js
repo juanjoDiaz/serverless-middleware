@@ -9,6 +9,7 @@ jest.mock('fs', () => ({
   },
 }));
 const fs = require('fs');
+const path = require('path');
 
 const fsAsync = fs.promises;
 const Middleware = require('../src/index');
@@ -26,7 +27,7 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
   });
 
   describe('error cases', () => {
-    beforeEach(() => fs.existsSync.mockImplementation((path) => path.endsWith('.js')));
+    beforeEach(() => fs.existsSync.mockImplementation((filePath) => filePath.endsWith('.js')));
 
     it('should error on unsupported runtimes', async () => {
       const serverless = getServerlessConfig({
@@ -52,7 +53,7 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
     });
 
     it('should error on unsupported node extensions', async () => {
-      fs.existsSync.mockImplementation((path) => !path.startsWith('middleware1'));
+      fs.existsSync.mockImplementation((filePath) => !filePath.startsWith('middleware1'));
       const serverless = getServerlessConfig({
         service: {
           functions: {
@@ -75,7 +76,7 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
     });
 
     it('should error on invalid handler', async () => {
-      fs.existsSync.mockImplementation((path) => !path.startsWith('middleware1'));
+      fs.existsSync.mockImplementation((filePath) => !filePath.startsWith('middleware1'));
       const serverless = getServerlessConfig({
         service: {
           functions: {
@@ -98,7 +99,7 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
     });
 
     it('should error on unknown function option', async () => {
-      fs.existsSync.mockImplementation((path) => !path.startsWith('middleware1'));
+      fs.existsSync.mockImplementation((filePath) => !filePath.startsWith('middleware1'));
       const serverless = getServerlessConfig({
         service: {
           functions: {
@@ -125,7 +126,7 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
     ['js', GeneratedFunctionTester.fromJavaScript],
     ['ts', GeneratedFunctionTester.fromTypeScript],
   ])('Node.js extension: %s', (extension, functionTesterFrom) => {
-    beforeEach(() => fs.existsSync.mockImplementation((path) => path.endsWith(`.${extension}`)));
+    beforeEach(() => fs.existsSync.mockImplementation((filePath) => filePath.endsWith(`.${extension}`)));
 
     describe('without pre/pos', () => {
       it('should process handlers that contain arrays and do nothing with standard handlers', async () => {
@@ -150,9 +151,9 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
         expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('.middleware/someFunc1.handler');
         expect(plugin.serverless.service.functions.someFunc2.handler).toEqual('someFunc2.handler');
         expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
-        expect(fsAsync.mkdir).toHaveBeenNthCalledWith(1, 'testPath/.middleware', { recursive: true });
+        expect(fsAsync.mkdir).toHaveBeenNthCalledWith(1, path.join('testPath', '.middleware'), { recursive: true });
         expect(fsAsync.writeFile).toHaveBeenCalledTimes(1);
-        expect(fsAsync.writeFile).toHaveBeenNthCalledWith(1, `testPath/.middleware/someFunc1.${extension}`, expect.any(String));
+        expect(fsAsync.writeFile).toHaveBeenNthCalledWith(1, path.join('testPath', '.middleware', `someFunc1.${extension}`), expect.any(String));
 
         const event = {};
         const context = {};
@@ -207,9 +208,9 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
         expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('.middleware/someFunc1.handler');
         expect(plugin.serverless.service.functions.someFunc2.handler).toEqual('someFunc2.handler');
         expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
-        expect(fsAsync.mkdir).toHaveBeenNthCalledWith(1, 'testPath/.middleware', { recursive: true });
+        expect(fsAsync.mkdir).toHaveBeenNthCalledWith(1, path.join('testPath', '.middleware'), { recursive: true });
         expect(fsAsync.writeFile).toHaveBeenCalledTimes(1);
-        expect(fsAsync.writeFile).toHaveBeenNthCalledWith(1, `testPath/.middleware/someFunc1.${extension}`, expect.any(String));
+        expect(fsAsync.writeFile).toHaveBeenNthCalledWith(1, path.join('testPath', '.middleware', `someFunc1.${extension}`), expect.any(String));
 
         const event = {};
         const context = {};
@@ -280,9 +281,9 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
         expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('.middleware/someFunc1.handler');
         expect(plugin.serverless.service.functions.someFunc2.handler).toEqual('someFunc2.handler');
         expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
-        expect(fsAsync.mkdir).toHaveBeenNthCalledWith(1, 'testPath/.middleware', { recursive: true });
+        expect(fsAsync.mkdir).toHaveBeenNthCalledWith(1, path.join('testPath', '.middleware'), { recursive: true });
         expect(fsAsync.writeFile).toHaveBeenCalledTimes(1);
-        expect(fsAsync.writeFile).toHaveBeenNthCalledWith(1, `testPath/.middleware/someFunc1.${extension}`, expect.any(String));
+        expect(fsAsync.writeFile).toHaveBeenNthCalledWith(1, path.join('testPath', '.middleware', `someFunc1.${extension}`), expect.any(String));
 
         const event = {};
         const context = {};
@@ -347,9 +348,9 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
 
         expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('.middleware/someFunc1.handler');
         expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
-        expect(fsAsync.mkdir).toHaveBeenNthCalledWith(1, 'testPath/.middleware', { recursive: true });
+        expect(fsAsync.mkdir).toHaveBeenNthCalledWith(1, path.join('testPath', '.middleware'), { recursive: true });
         expect(fsAsync.writeFile).toHaveBeenCalledTimes(1);
-        expect(fsAsync.writeFile).toHaveBeenNthCalledWith(1, `testPath/.middleware/someFunc1.${extension}`, expect.any(String));
+        expect(fsAsync.writeFile).toHaveBeenNthCalledWith(1, path.join('testPath', '.middleware', `someFunc1.${extension}`), expect.any(String));
 
         const event = {};
         const context = {};
@@ -426,9 +427,9 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
 
         expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('.middleware/someFunc1.handler');
         expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
-        expect(fsAsync.mkdir).toHaveBeenNthCalledWith(1, 'testPath/.middleware', { recursive: true });
+        expect(fsAsync.mkdir).toHaveBeenNthCalledWith(1, path.join('testPath', '.middleware'), { recursive: true });
         expect(fsAsync.writeFile).toHaveBeenCalledTimes(1);
-        expect(fsAsync.writeFile).toHaveBeenNthCalledWith(1, `testPath/.middleware/someFunc1.${extension}`, expect.any(String));
+        expect(fsAsync.writeFile).toHaveBeenNthCalledWith(1, path.join('testPath', '.middleware', `someFunc1.${extension}`), expect.any(String));
 
         const event = {};
         const context = {};
@@ -522,9 +523,9 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
 
         expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('.middleware/someFunc1.handler');
         expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
-        expect(fsAsync.mkdir).toHaveBeenNthCalledWith(1, 'testPath/.middleware', { recursive: true });
+        expect(fsAsync.mkdir).toHaveBeenNthCalledWith(1, path.join('testPath', '.middleware'), { recursive: true });
         expect(fsAsync.writeFile).toHaveBeenCalledTimes(1);
-        expect(fsAsync.writeFile).toHaveBeenNthCalledWith(1, `testPath/.middleware/someFunc1.${extension}`, expect.any(String));
+        expect(fsAsync.writeFile).toHaveBeenNthCalledWith(1, path.join('testPath', '.middleware', `someFunc1.${extension}`), expect.any(String));
 
         const event = {};
         const context = {};
@@ -605,9 +606,9 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
 
         expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('.middleware/someFunc1.handler');
         expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
-        expect(fsAsync.mkdir).toHaveBeenNthCalledWith(1, 'testPath/.middleware', { recursive: true });
+        expect(fsAsync.mkdir).toHaveBeenNthCalledWith(1, path.join('testPath', '.middleware'), { recursive: true });
         expect(fsAsync.writeFile).toHaveBeenCalledTimes(1);
-        expect(fsAsync.writeFile).toHaveBeenNthCalledWith(1, `testPath/.middleware/someFunc1.${extension}`, expect.any(String));
+        expect(fsAsync.writeFile).toHaveBeenNthCalledWith(1, path.join('testPath', '.middleware', `someFunc1.${extension}`), expect.any(String));
 
         const event = {};
         const context = {};
@@ -675,9 +676,9 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
 
         expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('.middleware/someFunc1.handler');
         expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
-        expect(fsAsync.mkdir).toHaveBeenNthCalledWith(1, 'testPath/.middleware', { recursive: true });
+        expect(fsAsync.mkdir).toHaveBeenNthCalledWith(1, path.join('testPath', '.middleware'), { recursive: true });
         expect(fsAsync.writeFile).toHaveBeenCalledTimes(1);
-        expect(fsAsync.writeFile).toHaveBeenNthCalledWith(1, `testPath/.middleware/someFunc1.${extension}`, expect.any(String));
+        expect(fsAsync.writeFile).toHaveBeenNthCalledWith(1, path.join('testPath', '.middleware', `someFunc1.${extension}`), expect.any(String));
 
         const event = {};
         const context = {};
@@ -770,9 +771,9 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
 
         expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('.middleware/someFunc1.handler');
         expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
-        expect(fsAsync.mkdir).toHaveBeenNthCalledWith(1, 'testPath/.middleware', { recursive: true });
+        expect(fsAsync.mkdir).toHaveBeenNthCalledWith(1, path.join('testPath', '.middleware'), { recursive: true });
         expect(fsAsync.writeFile).toHaveBeenCalledTimes(1);
-        expect(fsAsync.writeFile).toHaveBeenNthCalledWith(1, `testPath/.middleware/someFunc1.${extension}`, expect.any(String));
+        expect(fsAsync.writeFile).toHaveBeenNthCalledWith(1, path.join('testPath', '.middleware', `someFunc1.${extension}`), expect.any(String));
 
         const event = {};
         const context = {};

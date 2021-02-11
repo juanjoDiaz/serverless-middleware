@@ -116,7 +116,7 @@ class Middleware {
       this.serverless.cli.log(`Middleware: setting ${handlers.length} middlewares for function ${fn.name}`);
 
       const middlewareBuilder = this.middlewareBuilders[extension];
-      const handlerPath = `${this.middlewareOpts.pathFolder}/${fn.name}.${extension}`;
+      const handlerPath = path.join(this.middlewareOpts.pathFolder, `${fn.name}.${extension}`);
       const handler = middlewareBuilder(handlers, this.middlewareOpts.pathToRoot);
       await fsAsync.writeFile(handlerPath, handler);
       // eslint-disable-next-line no-param-reassign
