@@ -30,7 +30,7 @@ class Middleware {
     this.options = options;
 
     this.hooks = {
-      'after:package:initialize': this.processHandlers.bind(this),
+      'before:package:createDeploymentArtifacts': this.processHandlers.bind(this),
       'after:package:createDeploymentArtifacts': this.clearResources.bind(this),
       'before:deploy:function:packageFunction': this.processHandlers.bind(this),
       'after:deploy:function:deploy': this.clearResources.bind(this),

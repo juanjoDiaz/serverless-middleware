@@ -21,7 +21,7 @@ fsAsync.mkdir.mockReturnValue(Promise.resolve());
 fsAsync.writeFile.mockReturnValue(Promise.resolve());
 
 describe.each([
-  'after:package:initialize',
+  'before:package:createDeploymentArtifacts',
   'before:offline:start:init',
 ])('Serverless middleware %s hook', (hook) => {
   beforeEach(() => {
