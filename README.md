@@ -53,7 +53,7 @@ Handlers using `callback` will NOT work.
 const myMiddleware = async (event, context) => { ... };
 ```
 
-Once `serverless-middleware` is installed you can set the `function.handler` property to an array.
+Once `serverless-middleware` is installed you can set the `function.custom.middleware` property to an array and skip the `function.handler` property.
 Each middleware handler can be a string (like a standard handler would be) or an object containing the properties `then` and/or `catch`.
 
 For example:
@@ -65,14 +65,15 @@ provider:
   
 functions:
   myFunction:
-    handler:
-      - auth.authenticate
-      - auth.authorize
-      - then: myFunction.handler # `then:` is unnecessary here.
-      - catch: utils.handlerError
-      - # or both can be combined
-        then: logger.log
-        catch: utils.handlerLoggerError
+    custom:
+      middleware:
+        - auth.authenticate
+        - auth.authorize
+        - then: myFunction.handler # `then:` is unnecessary here.
+        - catch: utils.handlerError
+        - # or both can be combined
+          then: logger.log
+          catch: utils.handlerLoggerError
 ```
 
 will result in an execution like:
@@ -111,7 +112,33 @@ const myMiddleware = async (event, context) => {
 };
 ```
 
-You can also add pre/pos- middleware handler handles at the package level using the `custom.middleware` section of `serverless.yaml`. These middleware are just prepended/appended to all the function middleware handlers chain.
+You can also add pre/pos- middleware handlers and maintain the `function.handler`. These middleware are just prepended/appended to the main handler.
+
+For example:
+
+```yaml
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  
+functions:
+  myFunction:
+    events:
+      - http:
+          path: my-function
+          method: get
+    handler: myFunction.handler
+    custom:
+      middleware:
+        pre:
+          - auth.authenticate
+          - auth.authorize
+        pos:
+          - catch: utils.handlerError
+```
+
+You can also add pre/pos- middleware handlers at the package level using the `custom.middleware` section of `serverless.yaml`. These middleware are just prepended/appended to all the function middleware handlers chain.
 
 For example:
 
@@ -125,19 +152,26 @@ custom:
   middleware:
     pre:
       - auth.authenticate
-      - auth.authorize
     pos:
       - catch: utils.handlerError
 
-  
 functions:
+  myAnonymousFunction:
+    events:
+      - http:
+          path: my-anonymous-function
+          method: get
+    handler: myAnonymousFunction.handler
   myFunction:
-    handler:
-      - myFunction.handler
     events:
       - http:
           path: my-function
           method: get
+    handler: myFunction.handler
+    custom:
+      middleware:
+        pre:
+          - auth.authorize
 ```
 
 will result in a similar promise chain as above.
@@ -157,6 +191,41 @@ custom:
 ```
 
 This might be useful if you are using `sls package` and building your own artifacts.
+
+## Migrations
+
+### v0.0.14 to v0.0.14
+
+#### Use function.custom.middleware instead fo function.handler
+Passing an array to the handler property is not allowed anymore since Serverless is getting stricter with it's types and it also causes issues with Typescript.
+
+So
+```js
+functions:
+  myFunction:
+    handler:
+      - auth.authenticate
+      - auth.authorize
+      - then: myFunction.handler # `then:` is unnecessary here.
+      - catch: utils.handlerError
+      - # or both can be combined
+        then: logger.log
+        catch: utils.handlerLoggerError
+```
+becomes
+```js
+functions:
+  myFunction:
+    custom:
+      middleware:
+        - auth.authenticate
+        - auth.authorize
+        - then: myFunction.handler # `then:` is unnecessary here.
+        - catch: utils.handlerError
+        - # or both can be combined
+          then: logger.log
+          catch: utils.handlerLoggerError
+```
 
 ## Contribute
 

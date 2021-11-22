@@ -8,6 +8,7 @@
  * */
 const fs = require('fs');
 const path = require('path');
+const { extendServerlessSchema } = require('./schema');
 const createJSMiddlewareHandler = require('./javascript');
 const createTSMiddlewareHandler = require('./typescript');
 const { parseHandler } = require('./utils');
@@ -29,6 +30,8 @@ class Middleware {
     this.serverless = serverless;
     this.options = options;
 
+    extendServerlessSchema(this.serverless);
+
     this.hooks = {
       'before:package:createDeploymentArtifacts': this.processHandlers.bind(this),
       'after:package:createDeploymentArtifacts': this.clearResources.bind(this),
@@ -44,6 +47,10 @@ class Middleware {
       js: createJSMiddlewareHandler,
       ts: createTSMiddlewareHandler,
     };
+
+    // Fix for issues in Serverles
+    // https://github.com/serverless/serverless/pull/9307
+    this.serviceDir = this.serverless.serviceDir || this.serverless.config.servicePath || '';
   }
 
   /**
@@ -61,8 +68,8 @@ class Middleware {
 
     const config = (service.custom && service.custom.middleware) || {};
     const folderName = (typeof config.folderName === 'string') ? config.folderName : defaultOpts.folderName;
-    const pathFolder = path.join(this.serverless.config.servicePath, folderName);
-    const pathToRoot = path.relative(pathFolder, this.serverless.config.servicePath);
+    const pathFolder = path.join(this.serviceDir, folderName);
+    const pathToRoot = path.relative(pathFolder, this.serviceDir);
 
     return {
       folderName,
@@ -101,9 +108,37 @@ class Middleware {
       })
       .filter((fn) => this.middlewareOpts.pre.length
         || this.middlewareOpts.pos.length
-        || Array.isArray(fn.handler))
+        || (fn.custom && fn.custom.middleware))
       .map((fn) => {
-        const handlers = this.preProcessFnHandlers(fn);
+        if (!fn.custom || !fn.custom.middleware) {
+          return {
+            fn,
+            handlers: fn.handler ? [fn.handler] : [],
+          };
+        }
+
+        if (Array.isArray(fn.custom.middleware)) {
+          if (fn.handler) {
+            throw new Error(`Error in function ${fn.name}. When defining a handler, only the { pre: ..., pos: ...} configuration is allowed.`);
+          }
+
+          return {
+            fn,
+            handlers: fn.custom.middleware,
+          };
+        }
+
+        return {
+          fn,
+          handlers: [
+            ...(fn.custom.middleware.pre ? fn.custom.middleware.pre : []),
+            ...(fn.handler ? [fn.handler] : []),
+            ...(fn.custom.middleware.pos ? fn.custom.middleware.pos : []),
+          ],
+        };
+      })
+      .map(({ fn, handlers: rawHandlers }) => {
+        const handlers = this.preProcessFnHandlers(rawHandlers);
         const extension = this.getLanguageExtension(handlers);
         return { fn, handlers, extension };
       });
@@ -129,23 +164,24 @@ class Middleware {
    *
    * @return {Object[]} List of middleware to include for the function
    * */
-  preProcessFnHandlers(fn) {
-    return this.middlewareOpts.pre
-      .concat(fn.handler)
-      .concat(this.middlewareOpts.pos)
-      .map((handler) => {
-        if (handler.then && handler.catch) {
-          return {
-            then: parseHandler(handler.then),
-            catch: parseHandler(handler.catch),
-          };
-        }
-        if (handler.then) return { then: parseHandler(handler.then) };
-        if (handler.catch) return { catch: parseHandler(handler.catch) };
-        if (typeof handler === 'string') return { then: parseHandler(handler) };
+  preProcessFnHandlers(handlers) {
+    return [
+      ...this.middlewareOpts.pre,
+      ...handlers,
+      ...this.middlewareOpts.pos,
+    ].map((handler) => {
+      if (handler.then && handler.catch) {
+        return {
+          then: parseHandler(handler.then),
+          catch: parseHandler(handler.catch),
+        };
+      }
+      if (handler.then) return { then: parseHandler(handler.then) };
+      if (handler.catch) return { catch: parseHandler(handler.catch) };
+      if (typeof handler === 'string') return { then: parseHandler(handler) };
 
-        throw new Error(`Invalid handler: ${JSON.stringify(handler)}`);
-      });
+      throw new Error(`Invalid handler: ${JSON.stringify(handler)}`);
+    });
   }
 
   /**

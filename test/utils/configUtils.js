@@ -8,8 +8,15 @@ function getServerlessConfig(serverlessOverrides = {}) {
 
   return {
     getProvider: serverless.getProvider || (() => {}),
+    configSchemaHandler: serverless.configSchemaHandler !== undefined
+      ? serverless.configSchemaHandler
+      : {
+        defineCustomProperties() {},
+        defineFunctionProperties() {},
+      },
+    serviceDir: (serverless.serviceDir !== undefined) ? serverless.serviceDir : 'testPath',
     config: {
-      servicePath: serverless.config.servicePath || 'testPath',
+      servicePath: serverless.config.servicePath,
     },
     cli: {
       log: (serverless.config.cli && serverless.config.cli.log) || (() => {}),

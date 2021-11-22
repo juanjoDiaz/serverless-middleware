@@ -36,7 +36,9 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
           functions: {
             someFunc1: {
               name: 'someFunc1',
-              handler: [{ then: 'middleware1.handler' }, 'middleware2.handler', 'someFunc1.handler'],
+              custom: {
+                middleware: [{ then: 'middleware1.handler' }, 'middleware2.handler', 'someFunc1.handler'],
+              },
             },
             someFunc2: {
               name: 'someFunc2',
@@ -59,7 +61,9 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
           functions: {
             someFunc1: {
               name: 'someFunc1',
-              handler: [{ then: 'middleware1.handler' }, 'middleware2.handler', 'someFunc1.handler'],
+              custom: {
+                middleware: [{ then: 'middleware1.handler' }, 'middleware2.handler', 'someFunc1.handler'],
+              },
             },
             someFunc2: {
               name: 'someFunc2',
@@ -82,7 +86,9 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
           functions: {
             someFunc1: {
               name: 'someFunc1',
-              handler: [{ wrong_field: 'middleware1.handler' }, 'middleware2.handler', 'someFunc1.handler'],
+              custom: {
+                middleware: [{ wrong_field: 'middleware1.handler' }, 'middleware2.handler', 'someFunc1.handler'],
+              },
             },
             someFunc2: {
               name: 'someFunc2',
@@ -105,7 +111,9 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
           functions: {
             someFunc1: {
               name: 'someFunc1',
-              handler: [{ wrong_field: 'middleware1.handler' }, 'middleware2.handler', 'someFunc1.handler'],
+              custom: {
+                middleware: [{ wrong_field: 'middleware1.handler' }, 'middleware2.handler', 'someFunc1.handler'],
+              },
             },
             someFunc2: {
               name: 'someFunc2',
@@ -117,6 +125,32 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
       const plugin = new Middleware(serverless, { function: 'someFunc1' });
 
       await expect(plugin.hooks[hook]()).rejects.toThrow('Invalid handler: {"wrong_field":"middleware1.handler"}');
+      expect(fsAsync.mkdir).not.toHaveBeenCalled();
+      expect(fsAsync.writeFile).not.toHaveBeenCalled();
+    });
+
+    it('should error on function mixing handler and array middlewares', async () => {
+      fs.existsSync.mockImplementation((filePath) => !filePath.startsWith('middleware1'));
+      const serverless = getServerlessConfig({
+        service: {
+          functions: {
+            someFunc1: {
+              name: 'someFunc1',
+              handler: 'someFunc1.handler',
+              custom: {
+                middleware: ['middleware1.handler', 'middleware2.handler'],
+              },
+            },
+            someFunc2: {
+              name: 'someFunc2',
+              handler: 'someFunc2.handler',
+            },
+          },
+        },
+      });
+      const plugin = new Middleware(serverless, { function: 'someFunc1' });
+
+      await expect(plugin.hooks[hook]()).rejects.toThrow('Error in function someFunc1. When defining a handler, only the { pre: ..., pos: ...} configuration is allowed.');
       expect(fsAsync.mkdir).not.toHaveBeenCalled();
       expect(fsAsync.writeFile).not.toHaveBeenCalled();
     });
@@ -135,7 +169,9 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
             functions: {
               someFunc1: {
                 name: 'someFunc1',
-                handler: [{ then: 'middleware1.handler' }, 'middleware2.handler', 'someFunc1.handler'],
+                custom: {
+                  middleware: [{ then: 'middleware1.handler' }, 'middleware2.handler', 'someFunc1.handler'],
+                },
               },
               someFunc2: {
                 name: 'someFunc2',
@@ -186,13 +222,15 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
             functions: {
               someFunc1: {
                 name: 'someFunc1',
-                handler: [
-                  { then: 'middleware1.handler' },
-                  { then: 'middleware2.handler', catch: 'catchMiddleware1.handler' },
-                  'middleware3.handler',
-                  { catch: 'catchMiddleware2.handler' },
-                  'someFunc1.handler',
-                ],
+                custom: {
+                  middleware: [
+                    { then: 'middleware1.handler' },
+                    { then: 'middleware2.handler', catch: 'catchMiddleware1.handler' },
+                    'middleware3.handler',
+                    { catch: 'catchMiddleware2.handler' },
+                    'someFunc1.handler',
+                  ],
+                },
               },
               someFunc2: {
                 name: 'someFunc2',
@@ -259,13 +297,15 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
             functions: {
               someFunc1: {
                 name: 'someFunc1',
-                handler: [
-                  { then: 'middleware1.handler' },
-                  { then: 'middleware2.handler', catch: 'catchMiddleware1.handler' },
-                  'middleware3.handler',
-                  { catch: 'catchMiddleware2.handler' },
-                  'someFunc1.handler',
-                ],
+                custom: {
+                  middleware: [
+                    { then: 'middleware1.handler' },
+                    { then: 'middleware2.handler', catch: 'catchMiddleware1.handler' },
+                    'middleware3.handler',
+                    { catch: 'catchMiddleware2.handler' },
+                    'someFunc1.handler',
+                  ],
+                },
               },
               someFunc2: {
                 name: 'someFunc2',
@@ -322,7 +362,7 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
     });
 
     describe('with pre-handlers', () => {
-      it('should process standard and array handlers and add the pre-handlers', async () => {
+      it('should process standard handlers and array middlewares and add the global pre-handlers', async () => {
         const serverless = getServerlessConfig({
           service: {
             custom: {
@@ -333,7 +373,9 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
             functions: {
               someFunc1: {
                 name: 'someFunc1',
-                handler: [{ then: 'middleware1.handler' }, 'middleware2.handler', 'someFunc1.handler'],
+                custom: {
+                  middleware: [{ then: 'middleware1.handler' }, 'middleware2.handler', 'someFunc1.handler'],
+                },
               },
               someFunc2: {
                 name: 'someFunc2',
@@ -395,7 +437,7 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
         // ]);
       });
 
-      it('should process handler and add pre-handlers with catch blocks', async () => {
+      it('should process middlewares and add pre-handlers with catch blocks', async () => {
         const serverless = getServerlessConfig({
           service: {
             custom: {
@@ -406,13 +448,15 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
             functions: {
               someFunc1: {
                 name: 'someFunc1',
-                handler: [
-                  { then: 'middleware1.handler' },
-                  { then: 'middleware2.handler', catch: 'catchMiddleware1.handler' },
-                  'middleware3.handler',
-                  { catch: 'catchMiddleware2.handler' },
-                  'someFunc1.handler',
-                ],
+                custom: {
+                  middleware: [
+                    { then: 'middleware1.handler' },
+                    { then: 'middleware2.handler', catch: 'catchMiddleware1.handler' },
+                    'middleware3.handler',
+                    { catch: 'catchMiddleware2.handler' },
+                    'someFunc1.handler',
+                  ],
+                },
               },
               someFunc2: {
                 name: 'someFunc2',
@@ -491,6 +535,69 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
         ]);
       });
 
+      it('should process standard handlers and array middlewares and add the function-specific pre-handlers', async () => {
+        const serverless = getServerlessConfig({
+          service: {
+            functions: {
+              someFunc1: {
+                name: 'someFunc1',
+                handler: 'someFunc1.handler',
+                custom: {
+                  middleware: {
+                    pre: ['preHandler1.handler', 'preHandler2.handler'],
+                  },
+                },
+              },
+            },
+          },
+        });
+        const plugin = new Middleware(serverless, {});
+
+        await plugin.hooks[hook]();
+
+        expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('.middleware/someFunc1.handler');
+        expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
+        expect(fsAsync.mkdir).toHaveBeenNthCalledWith(1, path.join('testPath', '.middleware'), { recursive: true });
+        expect(fsAsync.writeFile).toHaveBeenCalledTimes(1);
+        expect(fsAsync.writeFile).toHaveBeenNthCalledWith(1, path.join('testPath', '.middleware', `someFunc1.${extension}`), expect.any(String));
+
+        const event = {};
+        const context = {};
+        const middlewares = {
+          preHandler1: { handler: jest.fn().mockImplementation(() => Promise.resolve()) },
+          preHandler2: { handler: jest.fn().mockImplementation(() => Promise.resolve()) },
+          someFunc1: { handler: jest.fn().mockImplementation(() => Promise.resolve()) },
+        };
+
+        const someFunc1Tester = functionTesterFrom(fsAsync.writeFile.mock.calls[0][1]);
+        await someFunc1Tester.executeMiddlewareFunction(event, context, middlewares);
+
+        expect(middlewares.preHandler1.handler).toHaveBeenCalledTimes(1);
+        expect(middlewares.preHandler1.handler).toHaveBeenCalledWith(event, context);
+        expect(middlewares.preHandler2.handler).toHaveBeenCalledTimes(1);
+        expect(middlewares.preHandler2.handler).toHaveBeenCalledWith(event, context);
+        expect(middlewares.someFunc1.handler).toHaveBeenCalledTimes(1);
+        expect(middlewares.someFunc1.handler).toHaveBeenCalledWith(event, context);
+
+        shouldHaveBeenCalledInOrder([
+          middlewares.preHandler1.handler,
+          middlewares.preHandler2.handler,
+          middlewares.someFunc1.handler,
+        ]);
+
+        middlewares.preHandler1.handler.mockClear();
+        middlewares.preHandler2.handler.mockClear();
+
+        // Commented because jest doesn't clear invocationCallOrder
+        // shouldHaveBeenCalledInOrder([
+        //   middlewares.preHandler1.handler,
+        //   middlewares.preHandler2.handler,
+        //   middlewares.middleware1.handler,
+        //   middlewares.middleware2.handler,
+        //   middlewares.someFunc2.handler,
+        // ]);
+      });
+
       it('should end process if context.end is called', async () => {
         const serverless = getServerlessConfig({
           service: {
@@ -502,13 +609,15 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
             functions: {
               someFunc1: {
                 name: 'someFunc1',
-                handler: [
-                  { then: 'middleware1.handler' },
-                  { then: 'middleware2.handler', catch: 'catchMiddleware1.handler' },
-                  'middleware3.handler',
-                  { catch: 'catchMiddleware2.handler' },
-                  'someFunc1.handler',
-                ],
+                custom: {
+                  middleware: [
+                    { then: 'middleware1.handler' },
+                    { then: 'middleware2.handler', catch: 'catchMiddleware1.handler' },
+                    'middleware3.handler',
+                    { catch: 'catchMiddleware2.handler' },
+                    'someFunc1.handler',
+                  ],
+                },
               },
               someFunc2: {
                 name: 'someFunc2',
@@ -580,7 +689,7 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
     });
 
     describe('with pos-handlers', () => {
-      it('should process standard and array handlers and add the pos-handlers', async () => {
+      it('should process standard handlers and array middlewares and add the global pos-handlers', async () => {
         const serverless = getServerlessConfig({
           service: {
             custom: {
@@ -591,7 +700,9 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
             functions: {
               someFunc1: {
                 name: 'someFunc1',
-                handler: [{ then: 'middleware1.handler' }, 'middleware2.handler', 'someFunc1.handler'],
+                custom: {
+                  middleware: [{ then: 'middleware1.handler' }, 'middleware2.handler', 'someFunc1.handler'],
+                },
               },
               someFunc2: {
                 name: 'someFunc2',
@@ -644,7 +755,7 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
         ]);
       });
 
-      it('should process handler and add pos-handlers with catch blocks', async () => {
+      it('should process middlewares and add pos-handlers with catch blocks', async () => {
         const serverless = getServerlessConfig({
           service: {
             custom: {
@@ -655,13 +766,15 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
             functions: {
               someFunc1: {
                 name: 'someFunc1',
-                handler: [
-                  { then: 'middleware1.handler' },
-                  { then: 'middleware2.handler', catch: 'catchMiddleware1.handler' },
-                  'middleware3.handler',
-                  { catch: 'catchMiddleware2.handler' },
-                  'someFunc1.handler',
-                ],
+                custom: {
+                  middleware: [
+                    { then: 'middleware1.handler' },
+                    { then: 'middleware2.handler', catch: 'catchMiddleware1.handler' },
+                    'middleware3.handler',
+                    { catch: 'catchMiddleware2.handler' },
+                    'someFunc1.handler',
+                  ],
+                },
               },
               someFunc2: {
                 name: 'someFunc2',
@@ -739,7 +852,70 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
         ]);
       });
 
-      it('should process handler and add pos-handlers with catch blocks', async () => {
+      it('should process standard handlers and array middlewares and add the function-specific pos-handlers', async () => {
+        const serverless = getServerlessConfig({
+          service: {
+            functions: {
+              someFunc1: {
+                name: 'someFunc1',
+                handler: 'someFunc1.handler',
+                custom: {
+                  middleware: {
+                    pos: ['posHandler1.handler', 'posHandler2.handler'],
+                  },
+                },
+              },
+            },
+          },
+        });
+        const plugin = new Middleware(serverless, {});
+
+        await plugin.hooks[hook]();
+
+        expect(plugin.serverless.service.functions.someFunc1.handler).toEqual('.middleware/someFunc1.handler');
+        expect(fsAsync.mkdir).toHaveBeenCalledTimes(1);
+        expect(fsAsync.mkdir).toHaveBeenNthCalledWith(1, path.join('testPath', '.middleware'), { recursive: true });
+        expect(fsAsync.writeFile).toHaveBeenCalledTimes(1);
+        expect(fsAsync.writeFile).toHaveBeenNthCalledWith(1, path.join('testPath', '.middleware', `someFunc1.${extension}`), expect.any(String));
+
+        const event = {};
+        const context = {};
+        const middlewares = {
+          posHandler1: { handler: jest.fn().mockImplementation(() => Promise.resolve()) },
+          posHandler2: { handler: jest.fn().mockImplementation(() => Promise.resolve()) },
+          someFunc1: { handler: jest.fn().mockImplementation(() => Promise.resolve()) },
+        };
+
+        const someFunc1Tester = functionTesterFrom(fsAsync.writeFile.mock.calls[0][1]);
+        await someFunc1Tester.executeMiddlewareFunction(event, context, middlewares);
+
+        expect(middlewares.posHandler1.handler).toHaveBeenCalledTimes(1);
+        expect(middlewares.posHandler1.handler).toHaveBeenCalledWith(event, context);
+        expect(middlewares.posHandler2.handler).toHaveBeenCalledTimes(1);
+        expect(middlewares.posHandler2.handler).toHaveBeenCalledWith(event, context);
+        expect(middlewares.someFunc1.handler).toHaveBeenCalledTimes(1);
+        expect(middlewares.someFunc1.handler).toHaveBeenCalledWith(event, context);
+
+        shouldHaveBeenCalledInOrder([
+          middlewares.someFunc1.handler,
+          middlewares.posHandler1.handler,
+          middlewares.posHandler2.handler,
+        ]);
+
+        middlewares.posHandler1.handler.mockClear();
+        middlewares.posHandler2.handler.mockClear();
+
+        // Commented because jest doesn't clear invocationCallOrder
+        // shouldHaveBeenCalledInOrder([
+        //   middlewares.preHandler1.handler,
+        //   middlewares.preHandler2.handler,
+        //   middlewares.middleware1.handler,
+        //   middlewares.middleware2.handler,
+        //   middlewares.someFunc2.handler,
+        // ]);
+      });
+
+      it('should end process if context.end is called', async () => {
         const serverless = getServerlessConfig({
           service: {
             custom: {
@@ -750,13 +926,15 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
             functions: {
               someFunc1: {
                 name: 'someFunc1',
-                handler: [
-                  { then: 'middleware1.handler' },
-                  { then: 'middleware2.handler', catch: 'catchMiddleware1.handler' },
-                  'middleware3.handler',
-                  { catch: 'catchMiddleware2.handler' },
-                  'someFunc1.handler',
-                ],
+                custom: {
+                  middleware: [
+                    { then: 'middleware1.handler' },
+                    { then: 'middleware2.handler', catch: 'catchMiddleware1.handler' },
+                    'middleware3.handler',
+                    { catch: 'catchMiddleware2.handler' },
+                    'someFunc1.handler',
+                  ],
+                },
               },
               someFunc2: {
                 name: 'someFunc2',
