@@ -194,7 +194,7 @@ This might be useful if you are using `sls package` and building your own artifa
 
 ## Migrations
 
-### v0.0.14 to v0.0.14
+### v0.0.14 to v0.0.15
 
 #### Use function.custom.middleware instead fo function.handler
 Passing an array to the handler property is not allowed anymore since Serverless is getting stricter with it's types and it also causes issues with Typescript.
