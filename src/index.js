@@ -26,9 +26,10 @@ class Middleware {
    *
    * @param {!Object} serverless - Serverless object
    * */
-  constructor(serverless, options) {
+  constructor(serverless, cliOptions, { log }) {
     this.serverless = serverless;
-    this.options = options;
+    this.cliOptions = cliOptions;
+    this.log = log;
 
     extendServerlessSchema(this.serverless);
 
@@ -56,7 +57,7 @@ class Middleware {
   /**
    * @description Configure the plugin based on the context of serverless.yml
    *
-   * @return {Object} - Configuration options to be used by the plugin
+   * @return {Object} - Configuration cliOptions to be used by the plugin
    * */
   configPlugin(service) {
     const defaultOpts = {
@@ -92,8 +93,8 @@ class Middleware {
   async processHandlers() {
     this.middlewareOpts = this.middlewareOpts || this.configPlugin(this.serverless.service);
 
-    const fnNames = this.options.function
-      ? [this.options.function]
+    const fnNames = this.cliOptions.function
+      ? [this.cliOptions.function]
       : this.serverless.service.getAllFunctions();
 
     const fns = fnNames
@@ -148,7 +149,7 @@ class Middleware {
     await fsAsync.mkdir(this.middlewareOpts.pathFolder, { recursive: true });
 
     await Promise.all(fns.map(async ({ fn, handlers, extension }) => {
-      this.serverless.cli.log(`Middleware: setting ${handlers.length} middlewares for function ${fn.name}`);
+      this.log.info(`Middleware: setting ${handlers.length} middlewares for function ${fn.name}`);
 
       const middlewareBuilder = this.middlewareBuilders[extension];
       const handlerPath = path.join(this.middlewareOpts.pathFolder, `${fn.name}.${extension}`);
@@ -240,7 +241,7 @@ class Middleware {
       }
     } catch (err) {
       if (err.code !== 'ENOENT') {
-        this.serverless.cli.log(`Middleware: Couldn't clean up temporary folder ${this.middlewareOpts.cleanFolder}.`);
+        this.log.error(`Middleware: Couldn't clean up temporary folder ${this.middlewareOpts.cleanFolder}.`);
       }
     }
   }

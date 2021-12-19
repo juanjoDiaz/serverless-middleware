@@ -18,9 +18,6 @@ function getServerlessConfig(serverlessOverrides = {}) {
     config: {
       servicePath: serverless.config.servicePath,
     },
-    cli: {
-      log: (serverless.config.cli && serverless.config.cli.log) || (() => {}),
-    },
     service: {
       provider: serverless.service.provider || { stage: '', region: '', runtime: 'nodejs10.x' },
       defaults: serverless.service.defaults || { stage: '', region: '' },
@@ -33,6 +30,19 @@ function getServerlessConfig(serverlessOverrides = {}) {
   };
 }
 
+function getPluginUtils(options = {}) {
+  return {
+    log: {
+      error: () => {},
+      warning: () => {},
+      notice: () => {},
+      info: () => {},
+      ...options.log,
+    },
+  };
+}
+
 module.exports = {
   getServerlessConfig,
+  getPluginUtils,
 };

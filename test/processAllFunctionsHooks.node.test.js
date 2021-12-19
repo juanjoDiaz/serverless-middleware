@@ -13,7 +13,7 @@ const path = require('path');
 
 const fsAsync = fs.promises;
 const Middleware = require('../src/index');
-const { getServerlessConfig } = require('./utils/configUtils');
+const { getServerlessConfig, getPluginUtils } = require('./utils/configUtils');
 const { GeneratedFunctionTester } = require('./utils/generatedFunctionTester');
 const { shouldHaveBeenCalledInOrder } = require('./utils/jest');
 
@@ -50,7 +50,9 @@ describe.each([
           },
         },
       });
-      const plugin = new Middleware(serverless, {});
+      const pluginUtils = getPluginUtils();
+
+      const plugin = new Middleware(serverless, {}, pluginUtils);
 
       await expect(plugin.hooks[hook]()).rejects.toThrow('Serverless Middleware doesn\'t support the "dotnet" runtime');
       expect(fsAsync.mkdir).not.toHaveBeenCalled();
@@ -75,7 +77,9 @@ describe.each([
           },
         },
       });
-      const plugin = new Middleware(serverless, {});
+      const pluginUtils = getPluginUtils();
+
+      const plugin = new Middleware(serverless, {}, pluginUtils);
 
       await expect(plugin.hooks[hook]()).rejects.toThrow('Unsupported handler extension for module middleware1. Only .js, .jsx, .ts and .tsx are supported.');
       expect(fsAsync.mkdir).not.toHaveBeenCalled();
@@ -100,7 +104,9 @@ describe.each([
           },
         },
       });
-      const plugin = new Middleware(serverless, {});
+      const pluginUtils = getPluginUtils();
+
+      const plugin = new Middleware(serverless, {}, pluginUtils);
 
       await expect(plugin.hooks[hook]()).rejects.toThrow('Invalid handler: {"wrong_field":"middleware1.handler"}');
       expect(fsAsync.mkdir).not.toHaveBeenCalled();
@@ -126,7 +132,9 @@ describe.each([
           },
         },
       });
-      const plugin = new Middleware(serverless, {});
+      const pluginUtils = getPluginUtils();
+
+      const plugin = new Middleware(serverless, {}, pluginUtils);
 
       await expect(plugin.hooks[hook]()).rejects.toThrow('Error in function someFunc1. When defining a handler, only the { pre: ..., pos: ...} configuration is allowed.');
       expect(fsAsync.mkdir).not.toHaveBeenCalled();
@@ -142,7 +150,9 @@ describe.each([
           functions: {},
         },
       });
-      const plugin = new Middleware(serverless, {});
+      const pluginUtils = getPluginUtils();
+
+      const plugin = new Middleware(serverless, {}, pluginUtils);
 
       await plugin.hooks[hook]();
 
@@ -175,7 +185,9 @@ describe.each([
             },
           },
         });
-        const plugin = new Middleware(serverless, {});
+        const pluginUtils = getPluginUtils();
+
+        const plugin = new Middleware(serverless, {}, pluginUtils);
 
         await plugin.hooks[hook]();
 
@@ -234,7 +246,9 @@ describe.each([
             },
           },
         });
-        const plugin = new Middleware(serverless, {});
+        const pluginUtils = getPluginUtils();
+
+        const plugin = new Middleware(serverless, {}, pluginUtils);
 
         await plugin.hooks[hook]();
 
@@ -309,7 +323,9 @@ describe.each([
             },
           },
         });
-        const plugin = new Middleware(serverless, {});
+        const pluginUtils = getPluginUtils();
+
+        const plugin = new Middleware(serverless, {}, pluginUtils);
 
         await plugin.hooks[hook]();
 
@@ -379,7 +395,9 @@ describe.each([
             },
           },
         });
-        const plugin = new Middleware(serverless, {});
+        const pluginUtils = getPluginUtils();
+
+        const plugin = new Middleware(serverless, {}, pluginUtils);
 
         await plugin.hooks[hook]();
 
@@ -475,7 +493,9 @@ describe.each([
             },
           },
         });
-        const plugin = new Middleware(serverless, {});
+        const pluginUtils = getPluginUtils();
+
+        const plugin = new Middleware(serverless, {}, pluginUtils);
 
         await plugin.hooks[hook]();
 
@@ -586,7 +606,9 @@ describe.each([
             },
           },
         });
-        const plugin = new Middleware(serverless, {});
+        const pluginUtils = getPluginUtils();
+
+        const plugin = new Middleware(serverless, {}, pluginUtils);
 
         await plugin.hooks[hook]();
 
@@ -661,7 +683,9 @@ describe.each([
             },
           },
         });
-        const plugin = new Middleware(serverless, {});
+        const pluginUtils = getPluginUtils();
+
+        const plugin = new Middleware(serverless, {}, pluginUtils);
 
         await plugin.hooks[hook]();
 
@@ -770,7 +794,9 @@ describe.each([
             },
           },
         });
-        const plugin = new Middleware(serverless, {});
+        const pluginUtils = getPluginUtils();
+
+        const plugin = new Middleware(serverless, {}, pluginUtils);
 
         await plugin.hooks[hook]();
 
@@ -864,7 +890,9 @@ describe.each([
             },
           },
         });
-        const plugin = new Middleware(serverless, {});
+        const pluginUtils = getPluginUtils();
+
+        const plugin = new Middleware(serverless, {}, pluginUtils);
 
         await plugin.hooks[hook]();
 
@@ -974,7 +1002,9 @@ describe.each([
             },
           },
         });
-        const plugin = new Middleware(serverless, {});
+        const pluginUtils = getPluginUtils();
+
+        const plugin = new Middleware(serverless, {}, pluginUtils);
 
         await plugin.hooks[hook]();
 
@@ -1049,7 +1079,9 @@ describe.each([
             },
           },
         });
-        const plugin = new Middleware(serverless, {});
+        const pluginUtils = getPluginUtils();
+
+        const plugin = new Middleware(serverless, {}, pluginUtils);
 
         await plugin.hooks[hook]();
 

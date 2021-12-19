@@ -13,7 +13,7 @@ const path = require('path');
 
 const fsAsync = fs.promises;
 const Middleware = require('../src/index');
-const { getServerlessConfig } = require('./utils/configUtils');
+const { getServerlessConfig, getPluginUtils } = require('./utils/configUtils');
 const { GeneratedFunctionTester } = require('./utils/generatedFunctionTester');
 const { shouldHaveBeenCalledInOrder } = require('./utils/jest');
 
@@ -47,7 +47,9 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
           },
         },
       });
-      const plugin = new Middleware(serverless, { function: 'someFunc1' });
+      const pluginUtils = getPluginUtils();
+
+      const plugin = new Middleware(serverless, { function: 'someFunc1' }, pluginUtils);
 
       await expect(plugin.hooks[hook]()).rejects.toThrow('Serverless Middleware doesn\'t support the "dotnet" runtime');
       expect(fsAsync.mkdir).not.toHaveBeenCalled();
@@ -72,7 +74,9 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
           },
         },
       });
-      const plugin = new Middleware(serverless, { function: 'someFunc1' });
+      const pluginUtils = getPluginUtils();
+
+      const plugin = new Middleware(serverless, { function: 'someFunc1' }, pluginUtils);
 
       await expect(plugin.hooks[hook]()).rejects.toThrow('Unsupported handler extension for module middleware1. Only .js, .jsx, .ts and .tsx are supported.');
       expect(fsAsync.mkdir).not.toHaveBeenCalled();
@@ -97,7 +101,9 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
           },
         },
       });
-      const plugin = new Middleware(serverless, { function: 'unknownFunction' });
+      const pluginUtils = getPluginUtils();
+
+      const plugin = new Middleware(serverless, { function: 'unknownFunction' }, pluginUtils);
 
       await expect(plugin.hooks[hook]()).rejects.toThrow('Unknown function: unknownFunction');
       expect(fsAsync.mkdir).not.toHaveBeenCalled();
@@ -122,7 +128,9 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
           },
         },
       });
-      const plugin = new Middleware(serverless, { function: 'someFunc1' });
+      const pluginUtils = getPluginUtils();
+
+      const plugin = new Middleware(serverless, { function: 'someFunc1' }, pluginUtils);
 
       await expect(plugin.hooks[hook]()).rejects.toThrow('Invalid handler: {"wrong_field":"middleware1.handler"}');
       expect(fsAsync.mkdir).not.toHaveBeenCalled();
@@ -148,7 +156,9 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
           },
         },
       });
-      const plugin = new Middleware(serverless, { function: 'someFunc1' });
+      const pluginUtils = getPluginUtils();
+
+      const plugin = new Middleware(serverless, { function: 'someFunc1' }, pluginUtils);
 
       await expect(plugin.hooks[hook]()).rejects.toThrow('Error in function someFunc1. When defining a handler, only the { pre: ..., pos: ...} configuration is allowed.');
       expect(fsAsync.mkdir).not.toHaveBeenCalled();
@@ -180,7 +190,9 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
             },
           },
         });
-        const plugin = new Middleware(serverless, { function: 'someFunc1' });
+        const pluginUtils = getPluginUtils();
+
+        const plugin = new Middleware(serverless, { function: 'someFunc1' }, pluginUtils);
 
         await plugin.hooks[hook]();
 
@@ -239,7 +251,9 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
             },
           },
         });
-        const plugin = new Middleware(serverless, { function: 'someFunc1' });
+        const pluginUtils = getPluginUtils();
+
+        const plugin = new Middleware(serverless, { function: 'someFunc1' }, pluginUtils);
 
         await plugin.hooks[hook]();
 
@@ -314,7 +328,9 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
             },
           },
         });
-        const plugin = new Middleware(serverless, { function: 'someFunc1' });
+        const pluginUtils = getPluginUtils();
+
+        const plugin = new Middleware(serverless, { function: 'someFunc1' }, pluginUtils);
 
         await plugin.hooks[hook]();
 
@@ -384,7 +400,9 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
             },
           },
         });
-        const plugin = new Middleware(serverless, { function: 'someFunc1' });
+        const pluginUtils = getPluginUtils();
+
+        const plugin = new Middleware(serverless, { function: 'someFunc1' }, pluginUtils);
 
         await plugin.hooks[hook]();
 
@@ -465,7 +483,9 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
             },
           },
         });
-        const plugin = new Middleware(serverless, { function: 'someFunc1' });
+        const pluginUtils = getPluginUtils();
+
+        const plugin = new Middleware(serverless, { function: 'someFunc1' }, pluginUtils);
 
         await plugin.hooks[hook]();
 
@@ -551,7 +571,9 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
             },
           },
         });
-        const plugin = new Middleware(serverless, {});
+        const pluginUtils = getPluginUtils();
+
+        const plugin = new Middleware(serverless, {}, pluginUtils);
 
         await plugin.hooks[hook]();
 
@@ -626,7 +648,9 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
             },
           },
         });
-        const plugin = new Middleware(serverless, { function: 'someFunc1' });
+        const pluginUtils = getPluginUtils();
+
+        const plugin = new Middleware(serverless, { function: 'someFunc1' }, pluginUtils);
 
         await plugin.hooks[hook]();
 
@@ -711,7 +735,9 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
             },
           },
         });
-        const plugin = new Middleware(serverless, { function: 'someFunc1' });
+        const pluginUtils = getPluginUtils();
+
+        const plugin = new Middleware(serverless, { function: 'someFunc1' }, pluginUtils);
 
         await plugin.hooks[hook]();
 
@@ -783,7 +809,9 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
             },
           },
         });
-        const plugin = new Middleware(serverless, { function: 'someFunc1' });
+        const pluginUtils = getPluginUtils();
+
+        const plugin = new Middleware(serverless, { function: 'someFunc1' }, pluginUtils);
 
         await plugin.hooks[hook]();
 
@@ -868,7 +896,9 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
             },
           },
         });
-        const plugin = new Middleware(serverless, {});
+        const pluginUtils = getPluginUtils();
+
+        const plugin = new Middleware(serverless, {}, pluginUtils);
 
         await plugin.hooks[hook]();
 
@@ -943,7 +973,9 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
             },
           },
         });
-        const plugin = new Middleware(serverless, { function: 'someFunc1' });
+        const pluginUtils = getPluginUtils();
+
+        const plugin = new Middleware(serverless, { function: 'someFunc1' }, pluginUtils);
 
         await plugin.hooks[hook]();
 

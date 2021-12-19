@@ -14,7 +14,7 @@ const path = require('path');
 
 const fsAsync = fs.promises;
 const Middleware = require('../src/index');
-const { getServerlessConfig } = require('./utils/configUtils');
+const { getServerlessConfig, getPluginUtils } = require('./utils/configUtils');
 
 describe('Backward compatibility', () => {
   describe('configSchemaHandler', () => {
@@ -22,9 +22,10 @@ describe('Backward compatibility', () => {
       const serverless = getServerlessConfig({
         configSchemaHandler: null,
       });
+      const pluginUtils = getPluginUtils();
 
       // eslint-disable-next-line no-new
-      new Middleware(serverless, {});
+      new Middleware(serverless, {}, pluginUtils);
     });
 
     it('should not define custom properties if defineCustomProperties is undefined', async () => {
@@ -36,9 +37,10 @@ describe('Backward compatibility', () => {
           defineFunctionProperties,
         },
       });
+      const pluginUtils = getPluginUtils();
 
       // eslint-disable-next-line no-new
-      new Middleware(serverless, {});
+      new Middleware(serverless, {}, pluginUtils);
 
       expect(defineFunctionProperties).toHaveBeenCalledTimes(1);
     });
@@ -52,9 +54,10 @@ describe('Backward compatibility', () => {
           defineFunctionProperties,
         },
       });
+      const pluginUtils = getPluginUtils();
 
       // eslint-disable-next-line no-new
-      new Middleware(serverless, {});
+      new Middleware(serverless, {}, pluginUtils);
 
       expect(defineCustomProperties).toHaveBeenCalledTimes(1);
     });
@@ -94,8 +97,9 @@ describe('Backward compatibility', () => {
           servicePath: 'testPath',
         },
       });
+      const pluginUtils = getPluginUtils();
 
-      const plugin = new Middleware(serverless, {});
+      const plugin = new Middleware(serverless, {}, pluginUtils);
 
       await plugin.hooks['before:package:createDeploymentArtifacts']();
 
@@ -120,8 +124,9 @@ describe('Backward compatibility', () => {
         },
         serviceDir: null,
       });
+      const pluginUtils = getPluginUtils();
 
-      const plugin = new Middleware(serverless, {});
+      const plugin = new Middleware(serverless, {}, pluginUtils);
 
       await plugin.hooks['before:package:createDeploymentArtifacts']();
 
