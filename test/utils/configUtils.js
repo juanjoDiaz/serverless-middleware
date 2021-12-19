@@ -1,3 +1,5 @@
+class FakeServerlessError extends Error {}
+
 function getServerlessConfig(serverlessOverrides = {}) {
   const serverless = {
     provider: {},
@@ -26,6 +28,9 @@ function getServerlessConfig(serverlessOverrides = {}) {
       getAllFunctions() { return Object.keys(this.functions); },
       getFunction(name) { return this.functions[name]; },
       functions: serverless.service.functions || {},
+    },
+    classes: {
+      Error: FakeServerlessError,
     },
   };
 }

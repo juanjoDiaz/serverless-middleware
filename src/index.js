@@ -102,7 +102,7 @@ class Middleware {
         const fn = this.serverless.service.getFunction(name);
 
         if (fn === undefined) {
-          throw new Error(`Unknown function: ${name}`);
+          throw new this.serverless.classes.Error(`Unknown function: ${name}`);
         }
 
         return fn;
@@ -120,7 +120,7 @@ class Middleware {
 
         if (Array.isArray(fn.custom.middleware)) {
           if (fn.handler) {
-            throw new Error(`Error in function ${fn.name}. When defining a handler, only the { pre: ..., pos: ...} configuration is allowed.`);
+            throw new this.serverless.classes.Error(`Error in function ${fn.name}. When defining a handler, only the { pre: ..., pos: ...} configuration is allowed.`);
           }
 
           return {
@@ -181,7 +181,7 @@ class Middleware {
       if (handler.catch) return { catch: parseHandler(handler.catch) };
       if (typeof handler === 'string') return { then: parseHandler(handler) };
 
-      throw new Error(`Invalid handler: ${JSON.stringify(handler)}`);
+      throw new this.serverless.classes.Error(`Invalid handler: ${JSON.stringify(handler)}`);
     });
   }
 
@@ -195,10 +195,10 @@ class Middleware {
       case 'nodejs10.x':
       case 'nodejs12.x':
       case 'nodejs14.x':
-        return Middleware.getNodeExtension(handlers);
+        return this.getNodeExtension(handlers);
       // TODO add other runtimes
       default:
-        throw new Error(`Serverless Middleware doesn't support the "${this.serverless.service.provider.runtime}" runtime`);
+        throw new this.serverless.classes.Error(`Serverless Middleware doesn't support the "${this.serverless.service.provider.runtime}" runtime`);
     }
   }
 
@@ -208,7 +208,7 @@ class Middleware {
    *
    * @return {string} Extension to use
    * */
-  static getNodeExtension(handlers) {
+  getNodeExtension(handlers) {
     const getNodeType = (handler) => {
       if (handler === undefined) return false;
 
@@ -217,7 +217,7 @@ class Middleware {
       if (fs.existsSync(`${module}.js`) || fs.existsSync(`${module}.jsx`)) return 'js';
       if (fs.existsSync(`${module}.ts`) || fs.existsSync(`${module}.tsx`)) return 'ts';
 
-      throw new Error(`Unsupported handler extension for module ${module}. Only .js, .jsx, .ts and .tsx are supported.`);
+      throw new this.serverless.classes.Error(`Unsupported handler extension for module ${module}. Only .js, .jsx, .ts and .tsx are supported.`);
     };
 
     const isTS = handlers.some((handler) => getNodeType(handler.then) === 'ts' || getNodeType(handler.catch) === 'ts');
