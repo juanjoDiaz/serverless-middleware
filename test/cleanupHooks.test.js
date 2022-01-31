@@ -5,7 +5,7 @@ jest.mock('fs', () => ({
   promises: {
     mkdir: jest.fn(),
     write: jest.fn(),
-    rmdir: jest.fn(),
+    rm: jest.fn(),
   },
 }));
 const fsAsync = require('fs').promises;
@@ -19,7 +19,7 @@ describe.each([
   'after:invoke:local:invoke',
   'before:offline:start:end',
 ])('Serverless middleware plugin %s hook', (hook) => {
-  beforeEach(() => fsAsync.rmdir.mockClear());
+  beforeEach(() => fsAsync.rm.mockClear());
 
   it('Should clean the temporary folder by default', async () => {
     const mockProvider = { request: jest.fn(() => Promise.resolve()) };
@@ -45,8 +45,8 @@ describe.each([
 
     await plugin.hooks[hook]();
 
-    expect(fsAsync.rmdir).toHaveBeenCalledTimes(1);
-    expect(fsAsync.rmdir).toHaveBeenCalledWith(path.join('testPath', '.middleware'), { recursive: true });
+    expect(fsAsync.rm).toHaveBeenCalledTimes(1);
+    expect(fsAsync.rm).toHaveBeenCalledWith(path.join('testPath', '.middleware'), { recursive: true });
     expect(serverless.cli.log).not.toHaveBeenCalledWith(expect.stringMatching(/^Middleware: Couldn't clean up temporary folder .*/));
   });
 
@@ -79,8 +79,8 @@ describe.each([
 
     await plugin.hooks[hook]();
 
-    expect(fsAsync.rmdir).toHaveBeenCalledTimes(1);
-    expect(fsAsync.rmdir).toHaveBeenCalledWith(path.join('testPath', '.middleware'), { recursive: true });
+    expect(fsAsync.rm).toHaveBeenCalledTimes(1);
+    expect(fsAsync.rm).toHaveBeenCalledWith(path.join('testPath', '.middleware'), { recursive: true });
     expect(serverless.cli.log).not.toHaveBeenCalledWith(expect.stringMatching(/^Middleware: Couldn't clean up temporary folder .*/));
   });
 
@@ -114,15 +114,15 @@ describe.each([
 
     await plugin.hooks[hook]();
 
-    expect(fsAsync.rmdir).toHaveBeenCalledTimes(1);
-    expect(fsAsync.rmdir).toHaveBeenCalledWith(path.join('testPath', 'test-folder'), { recursive: true });
+    expect(fsAsync.rm).toHaveBeenCalledTimes(1);
+    expect(fsAsync.rm).toHaveBeenCalledWith(path.join('testPath', 'test-folder'), { recursive: true });
     expect(serverless.cli.log).not.toHaveBeenCalledWith(expect.stringMatching(/^Middleware: Couldn't clean up temporary folder .*/));
   });
 
   it('Should ignore cleaning the custom temporary folder if there was nothing to clean', async () => {
     const err = new Error('Folder doesn\'t exist');
     err.code = 'ENOENT';
-    fsAsync.rmdir.mockRejectedValueOnce(err);
+    fsAsync.rm.mockRejectedValueOnce(err);
     const serverless = getServerlessConfig({
       config: {
         cli: {
@@ -137,13 +137,13 @@ describe.each([
 
     await plugin.hooks[hook]();
 
-    expect(fsAsync.rmdir).toHaveBeenCalledTimes(1);
-    expect(fsAsync.rmdir).toHaveBeenCalledWith(path.join('testPath', '.middleware'), { recursive: true });
+    expect(fsAsync.rm).toHaveBeenCalledTimes(1);
+    expect(fsAsync.rm).toHaveBeenCalledWith(path.join('testPath', '.middleware'), { recursive: true });
     expect(serverless.cli.log).not.toHaveBeenCalledWith(expect.stringMatching(/^Middleware: Couldn't clean up temporary folder .*/));
   });
 
   it('Should not error if couldn\'t clean up the custom temporary folder', async () => {
-    fsAsync.rmdir.mockRejectedValueOnce(new Error('Folder couldn\'t be cleaned'));
+    fsAsync.rm.mockRejectedValueOnce(new Error('Folder couldn\'t be cleaned'));
     const serverless = getServerlessConfig({
       config: {
         cli: {
@@ -158,8 +158,8 @@ describe.each([
 
     await plugin.hooks[hook]();
 
-    expect(fsAsync.rmdir).toHaveBeenCalledTimes(1);
-    expect(fsAsync.rmdir).toHaveBeenCalledWith(path.join('testPath', '.middleware'), { recursive: true });
+    expect(fsAsync.rm).toHaveBeenCalledTimes(1);
+    expect(fsAsync.rm).toHaveBeenCalledWith(path.join('testPath', '.middleware'), { recursive: true });
     expect(serverless.cli.log).toHaveBeenCalledWith(expect.stringMatching(/^Middleware: Couldn't clean up temporary folder .*/));
   });
 
@@ -192,7 +192,7 @@ describe.each([
 
     await plugin.hooks[hook]();
 
-    expect(fsAsync.rmdir).not.toHaveBeenCalled();
+    expect(fsAsync.rm).not.toHaveBeenCalled();
     expect(serverless.cli.log).not.toHaveBeenCalledWith(expect.stringMatching(/^Middleware: Couldn't clean up temporary folder .*/));
   });
 });

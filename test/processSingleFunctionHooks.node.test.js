@@ -5,7 +5,7 @@ jest.mock('fs', () => ({
   promises: {
     mkdir: jest.fn(),
     writeFile: jest.fn(),
-    rmdir: jest.fn(),
+    rm: jest.fn(),
   },
 }));
 const fs = require('fs');
