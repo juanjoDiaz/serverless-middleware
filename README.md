@@ -3,16 +3,16 @@ Serverless Middleware
 [![Serverless][serverless-badge]](serverless-badge-url)
 [![npm version][npm-version-badge]][npm-version-badge-url]
 [![npm monthly downloads][npm-downloads-badge]][npm-version-badge-url]
-[![Build Status][travis-badge]][travis-badge-url]
+[![Node.js CI](https://github.com/juanjoDiaz/serverless-middleware/actions/workflows/on-push.yaml/badge.svg)](https://github.com/juanjoDiaz/serverless-middleware/actions/workflows/on-push.yaml)
 [![Coverage Status][coveralls-badge]][coveralls-badge-url]
 [![license](https://img.shields.io/npm/l/serverless-middleware.svg)](https://raw.githubusercontent.com/juanjoDiaz/serverless-middleware/master/LICENSE)
 
 Serverless plugin to allow middleware handlers configured directly in serverless.yaml
 
 ## Requirements:
-* Serverless
+* Serverless v3
 * AWS provider
-* Node.js 10+
+* Node.js 14+
 
 ### Supported runtimes
 
@@ -246,7 +246,5 @@ This software is released under the MIT license. See [the license file](LICENSE)
 [npm-version-badge]: https://badge.fury.io/js/serverless-middleware.svg
 [npm-version-badge-url]: https://www.npmjs.com/package/serverless-middleware
 [npm-downloads-badge]: https://img.shields.io/npm/dm/serverless-middleware.svg
-[travis-badge]: https://travis-ci.org/juanjoDiaz/serverless-middleware.svg
-[travis-badge-url]: https://travis-ci.org/juanjoDiaz/serverless-middleware
 [coveralls-badge]: https://coveralls.io/repos/juanjoDiaz/serverless-middleware/badge.svg?branch=master
 [coveralls-badge-url]: https://coveralls.io/r/juanjoDiaz/serverless-middleware?branch=master
