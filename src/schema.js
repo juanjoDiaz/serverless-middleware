@@ -13,6 +13,7 @@ function extendServerlessSchema(serverless) {
           then: { type: 'string' },
           catch: { type: 'string' },
         },
+        additionalProperties: false,
       },
     ],
   };
@@ -43,10 +44,11 @@ function extendServerlessSchema(serverless) {
             { type: 'array', items: middlewareSchema },
             {
               type: 'object',
-              items: {
+              properties: {
                 pre: { type: 'array', items: middlewareSchema },
                 pos: { type: 'array', items: middlewareSchema },
               },
+              additionalProperties: false,
             },
           ],
         },
