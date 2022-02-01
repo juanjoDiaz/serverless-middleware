@@ -36,9 +36,7 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
           functions: {
             someFunc1: {
               name: 'someFunc1',
-              custom: {
-                middleware: [{ then: 'middleware1.handler' }, 'middleware2.handler', 'someFunc1.handler'],
-              },
+              middleware: [{ then: 'middleware1.handler' }, 'middleware2.handler', 'someFunc1.handler'],
             },
             someFunc2: {
               name: 'someFunc2',
@@ -63,9 +61,7 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
           functions: {
             someFunc1: {
               name: 'someFunc1',
-              custom: {
-                middleware: [{ then: 'middleware1.handler' }, 'middleware2.handler', 'someFunc1.handler'],
-              },
+              middleware: [{ then: 'middleware1.handler' }, 'middleware2.handler', 'someFunc1.handler'],
             },
             someFunc2: {
               name: 'someFunc2',
@@ -90,9 +86,7 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
           functions: {
             someFunc1: {
               name: 'someFunc1',
-              custom: {
-                middleware: [{ wrong_field: 'middleware1.handler' }, 'middleware2.handler', 'someFunc1.handler'],
-              },
+              middleware: [{ wrong_field: 'middleware1.handler' }, 'middleware2.handler', 'someFunc1.handler'],
             },
             someFunc2: {
               name: 'someFunc2',
@@ -117,9 +111,7 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
           functions: {
             someFunc1: {
               name: 'someFunc1',
-              custom: {
-                middleware: [{ wrong_field: 'middleware1.handler' }, 'middleware2.handler', 'someFunc1.handler'],
-              },
+              middleware: [{ wrong_field: 'middleware1.handler' }, 'middleware2.handler', 'someFunc1.handler'],
             },
             someFunc2: {
               name: 'someFunc2',
@@ -145,9 +137,7 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
             someFunc1: {
               name: 'someFunc1',
               handler: 'someFunc1.handler',
-              custom: {
-                middleware: ['middleware1.handler', 'middleware2.handler'],
-              },
+              middleware: ['middleware1.handler', 'middleware2.handler'],
             },
             someFunc2: {
               name: 'someFunc2',
@@ -179,9 +169,7 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
             functions: {
               someFunc1: {
                 name: 'someFunc1',
-                custom: {
-                  middleware: [{ then: 'middleware1.handler' }, 'middleware2.handler', 'someFunc1.handler'],
-                },
+                middleware: [{ then: 'middleware1.handler' }, 'middleware2.handler', 'someFunc1.handler'],
               },
               someFunc2: {
                 name: 'someFunc2',
@@ -234,15 +222,13 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
             functions: {
               someFunc1: {
                 name: 'someFunc1',
-                custom: {
-                  middleware: [
-                    { then: 'middleware1.handler' },
-                    { then: 'middleware2.handler', catch: 'catchMiddleware1.handler' },
-                    'middleware3.handler',
-                    { catch: 'catchMiddleware2.handler' },
-                    'someFunc1.handler',
-                  ],
-                },
+                middleware: [
+                  { then: 'middleware1.handler' },
+                  { then: 'middleware2.handler', catch: 'catchMiddleware1.handler' },
+                  'middleware3.handler',
+                  { catch: 'catchMiddleware2.handler' },
+                  'someFunc1.handler',
+                ],
               },
               someFunc2: {
                 name: 'someFunc2',
@@ -311,15 +297,13 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
             functions: {
               someFunc1: {
                 name: 'someFunc1',
-                custom: {
-                  middleware: [
-                    { then: 'middleware1.handler' },
-                    { then: 'middleware2.handler', catch: 'catchMiddleware1.handler' },
-                    'middleware3.handler',
-                    { catch: 'catchMiddleware2.handler' },
-                    'someFunc1.handler',
-                  ],
-                },
+                middleware: [
+                  { then: 'middleware1.handler' },
+                  { then: 'middleware2.handler', catch: 'catchMiddleware1.handler' },
+                  'middleware3.handler',
+                  { catch: 'catchMiddleware2.handler' },
+                  'someFunc1.handler',
+                ],
               },
               someFunc2: {
                 name: 'someFunc2',
@@ -389,9 +373,7 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
             functions: {
               someFunc1: {
                 name: 'someFunc1',
-                custom: {
-                  middleware: [{ then: 'middleware1.handler' }, 'middleware2.handler', 'someFunc1.handler'],
-                },
+                middleware: [{ then: 'middleware1.handler' }, 'middleware2.handler', 'someFunc1.handler'],
               },
               someFunc2: {
                 name: 'someFunc2',
@@ -466,15 +448,13 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
             functions: {
               someFunc1: {
                 name: 'someFunc1',
-                custom: {
-                  middleware: [
-                    { then: 'middleware1.handler' },
-                    { then: 'middleware2.handler', catch: 'catchMiddleware1.handler' },
-                    'middleware3.handler',
-                    { catch: 'catchMiddleware2.handler' },
-                    'someFunc1.handler',
-                  ],
-                },
+                middleware: [
+                  { then: 'middleware1.handler' },
+                  { then: 'middleware2.handler', catch: 'catchMiddleware1.handler' },
+                  'middleware3.handler',
+                  { catch: 'catchMiddleware2.handler' },
+                  'someFunc1.handler',
+                ],
               },
               someFunc2: {
                 name: 'someFunc2',
@@ -562,10 +542,8 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
               someFunc1: {
                 name: 'someFunc1',
                 handler: 'someFunc1.handler',
-                custom: {
-                  middleware: {
-                    pre: ['preHandler1.handler', 'preHandler2.handler'],
-                  },
+                middleware: {
+                  pre: ['preHandler1.handler', 'preHandler2.handler'],
                 },
               },
             },
@@ -631,15 +609,13 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
             functions: {
               someFunc1: {
                 name: 'someFunc1',
-                custom: {
-                  middleware: [
-                    { then: 'middleware1.handler' },
-                    { then: 'middleware2.handler', catch: 'catchMiddleware1.handler' },
-                    'middleware3.handler',
-                    { catch: 'catchMiddleware2.handler' },
-                    'someFunc1.handler',
-                  ],
-                },
+                middleware: [
+                  { then: 'middleware1.handler' },
+                  { then: 'middleware2.handler', catch: 'catchMiddleware1.handler' },
+                  'middleware3.handler',
+                  { catch: 'catchMiddleware2.handler' },
+                  'someFunc1.handler',
+                ],
               },
               someFunc2: {
                 name: 'someFunc2',
@@ -724,9 +700,7 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
             functions: {
               someFunc1: {
                 name: 'someFunc1',
-                custom: {
-                  middleware: [{ then: 'middleware1.handler' }, 'middleware2.handler', 'someFunc1.handler'],
-                },
+                middleware: [{ then: 'middleware1.handler' }, 'middleware2.handler', 'someFunc1.handler'],
               },
               someFunc2: {
                 name: 'someFunc2',
@@ -792,15 +766,13 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
             functions: {
               someFunc1: {
                 name: 'someFunc1',
-                custom: {
-                  middleware: [
-                    { then: 'middleware1.handler' },
-                    { then: 'middleware2.handler', catch: 'catchMiddleware1.handler' },
-                    'middleware3.handler',
-                    { catch: 'catchMiddleware2.handler' },
-                    'someFunc1.handler',
-                  ],
-                },
+                middleware: [
+                  { then: 'middleware1.handler' },
+                  { then: 'middleware2.handler', catch: 'catchMiddleware1.handler' },
+                  'middleware3.handler',
+                  { catch: 'catchMiddleware2.handler' },
+                  'someFunc1.handler',
+                ],
               },
               someFunc2: {
                 name: 'someFunc2',
@@ -887,10 +859,8 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
               someFunc1: {
                 name: 'someFunc1',
                 handler: 'someFunc1.handler',
-                custom: {
-                  middleware: {
-                    pos: ['posHandler1.handler', 'posHandler2.handler'],
-                  },
+                middleware: {
+                  pos: ['posHandler1.handler', 'posHandler2.handler'],
                 },
               },
             },
@@ -956,15 +926,13 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
             functions: {
               someFunc1: {
                 name: 'someFunc1',
-                custom: {
-                  middleware: [
-                    { then: 'middleware1.handler' },
-                    { then: 'middleware2.handler', catch: 'catchMiddleware1.handler' },
-                    'middleware3.handler',
-                    { catch: 'catchMiddleware2.handler' },
-                    'someFunc1.handler',
-                  ],
-                },
+                middleware: [
+                  { then: 'middleware1.handler' },
+                  { then: 'middleware2.handler', catch: 'catchMiddleware1.handler' },
+                  'middleware3.handler',
+                  { catch: 'catchMiddleware2.handler' },
+                  'someFunc1.handler',
+                ],
               },
               someFunc2: {
                 name: 'someFunc2',

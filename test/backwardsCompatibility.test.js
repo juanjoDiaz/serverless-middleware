@@ -85,9 +85,7 @@ describe('Backward compatibility', () => {
           functions: {
             someFunc1: {
               name: 'someFunc1',
-              custom: {
-                middleware: ['middleware1.handler', 'middleware2.handler', 'handler.handler'],
-              },
+              middleware: ['middleware1.handler', 'middleware2.handler', 'handler.handler'],
             },
             someFunc2: { name: 'someFunc2' },
           },
@@ -115,9 +113,7 @@ describe('Backward compatibility', () => {
           functions: {
             someFunc1: {
               name: 'someFunc1',
-              custom: {
-                middleware: ['middleware1.handler', 'middleware2.handler', 'handler.handler'],
-              },
+              middleware: ['middleware1.handler', 'middleware2.handler', 'handler.handler'],
             },
             someFunc2: { name: 'someFunc2' },
           },

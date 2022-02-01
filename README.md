@@ -53,7 +53,7 @@ Handlers using `callback` will NOT work.
 const myMiddleware = async (event, context) => { ... };
 ```
 
-Once `serverless-middleware` is installed you can set the `function.custom.middleware` property to an array and skip the `function.handler` property.
+Once `serverless-middleware` is installed you can set the `function.middleware` property to an array and skip the `function.handler` property.
 Each middleware handler can be a string (like a standard handler would be) or an object containing the properties `then` and/or `catch`.
 
 For example:
@@ -65,15 +65,14 @@ provider:
   
 functions:
   myFunction:
-    custom:
-      middleware:
-        - auth.authenticate
-        - auth.authorize
-        - then: myFunction.handler # `then:` is unnecessary here.
-        - catch: utils.handlerError
-        - # or both can be combined
-          then: logger.log
-          catch: utils.handlerLoggerError
+    middleware:
+      - auth.authenticate
+      - auth.authorize
+      - then: myFunction.handler # `then:` is unnecessary here.
+      - catch: utils.handlerError
+      - # or both can be combined
+        then: logger.log
+        catch: utils.handlerLoggerError
 ```
 
 will result in an execution like:
@@ -129,13 +128,12 @@ functions:
           path: my-function
           method: get
     handler: myFunction.handler
-    custom:
-      middleware:
-        pre:
-          - auth.authenticate
-          - auth.authorize
-        pos:
-          - catch: utils.handlerError
+    middleware:
+      pre:
+        - auth.authenticate
+        - auth.authorize
+      pos:
+        - catch: utils.handlerError
 ```
 
 You can also add pre/pos- middleware handlers at the package level using the `custom.middleware` section of `serverless.yaml`. These middleware are just prepended/appended to all the function middleware handlers chain.
@@ -168,10 +166,9 @@ functions:
           path: my-function
           method: get
     handler: myFunction.handler
-    custom:
-      middleware:
-        pre:
-          - auth.authorize
+    middleware:
+      pre:
+        - auth.authorize
 ```
 
 will result in a similar promise chain as above.
@@ -193,6 +190,10 @@ custom:
 This might be useful if you are using `sls package` and building your own artifacts.
 
 ## Migrations
+
+### v1.0.0 to 2.0.0
+
+#### Use function.middleware instead fo function.custom.middleware
 
 ### v0.0.14 to v0.0.15
 

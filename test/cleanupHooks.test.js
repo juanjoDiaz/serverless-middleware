@@ -29,9 +29,7 @@ describe.each([
         functions: {
           someFunc1: {
             name: 'someFunc1',
-            custom: {
-              middleware: ['middleware1.handler', 'middleware2.handler', 'handler.handler'],
-            },
+            middleware: ['middleware1.handler', 'middleware2.handler', 'handler.handler'],
           },
         },
       },
@@ -64,9 +62,7 @@ describe.each([
         functions: {
           someFunc1: {
             name: 'someFunc1',
-            custom: {
-              middleware: ['middleware1.handler', 'middleware2.handler', 'handler.handler'],
-            },
+            middleware: ['middleware1.handler', 'middleware2.handler', 'handler.handler'],
           },
         },
       },
@@ -100,9 +96,7 @@ describe.each([
         functions: {
           someFunc1: {
             name: 'someFunc1',
-            custom: {
-              middleware: ['middleware1.handler', 'middleware2.handler', 'handler.handler'],
-            },
+            middleware: ['middleware1.handler', 'middleware2.handler', 'handler.handler'],
           },
         },
       },
@@ -181,9 +175,7 @@ describe.each([
         functions: {
           someFunc1: {
             name: 'someFunc1',
-            custom: {
-              middleware: ['middleware1.handler', 'middleware2.handler', 'handler.handler'],
-            },
+            middleware: ['middleware1.handler', 'middleware2.handler', 'handler.handler'],
           },
         },
       },

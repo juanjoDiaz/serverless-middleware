@@ -109,32 +109,32 @@ class Middleware {
       })
       .filter((fn) => this.middlewareOpts.pre.length
         || this.middlewareOpts.pos.length
-        || (fn.custom && fn.custom.middleware))
+        || fn.middleware)
       .map((fn) => {
-        if (!fn.custom || !fn.custom.middleware) {
+        if (!fn.middleware) {
           return {
             fn,
             handlers: fn.handler ? [fn.handler] : [],
           };
         }
 
-        if (Array.isArray(fn.custom.middleware)) {
+        if (Array.isArray(fn.middleware)) {
           if (fn.handler) {
             throw new this.serverless.classes.Error(`Error in function ${fn.name}. When defining a handler, only the { pre: ..., pos: ...} configuration is allowed.`);
           }
 
           return {
             fn,
-            handlers: fn.custom.middleware,
+            handlers: fn.middleware,
           };
         }
 
         return {
           fn,
           handlers: [
-            ...(fn.custom.middleware.pre ? fn.custom.middleware.pre : []),
+            ...(fn.middleware.pre ? fn.middleware.pre : []),
             ...(fn.handler ? [fn.handler] : []),
-            ...(fn.custom.middleware.pos ? fn.custom.middleware.pos : []),
+            ...(fn.middleware.pos ? fn.middleware.pos : []),
           ],
         };
       })
