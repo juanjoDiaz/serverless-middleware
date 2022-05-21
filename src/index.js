@@ -192,9 +192,9 @@ class Middleware {
    * */
   getLanguageExtension(handlers) {
     switch (this.serverless.service.provider.runtime) {
-      case 'nodejs10.x':
       case 'nodejs12.x':
       case 'nodejs14.x':
+      case 'nodejs16.x':
         return this.getNodeExtension(handlers);
       // TODO add other runtimes
       default:

@@ -21,7 +21,7 @@ function getServerlessConfig(serverlessOverrides = {}) {
       servicePath: serverless.config.servicePath,
     },
     service: {
-      provider: serverless.service.provider || { stage: '', region: '', runtime: 'nodejs10.x' },
+      provider: serverless.service.provider || { stage: '', region: '', runtime: 'nodejs16.x' },
       defaults: serverless.service.defaults || { stage: '', region: '' },
       service: 'middleware-test',
       custom: serverless.service.custom,
