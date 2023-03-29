@@ -23,7 +23,7 @@ function createJSMiddlewareHandler(handlers, pathToRoot) {
     }, {});
 
   const imports = Object.keys(handlersInfo)
-    .map((handler) => `const ${handlersInfo[handler]} = require('${pathToRoot}/${handler}');`).join('\n');
+    .map((handler) => `const ${handlersInfo[handler]} = require('${pathToRoot}/${handler}'.js);`).join('\n');
 
   const promiseChain = handlers.map((handler) => {
     if (handler.then && handler.catch) {
