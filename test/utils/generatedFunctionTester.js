@@ -19,9 +19,9 @@ class GeneratedFunctionTester {
     // eslint-disable-next-line no-new-func
     return new Function('event', 'context', 'dependencies', `
       const require = (dependencyName) => {
-        const dependency = dependencies[dependencyName.replace('../', '')];
+        const dependency = dependencies[dependencyName.replace('../', '').replace(/^(.+).js$/, '$1')];
         if (!dependency) {
-          throw new Error(\`Unknow dependency (\${dep})\`);
+          throw new Error(\`Unknow dependency (\${dependencyName})\`);
         }
 
         return dependency;
