@@ -16,12 +16,9 @@ Serverless plugin to allow middleware handlers configured directly in serverless
 
 ### Supported runtimes
 
-- [x] nodejs12.x (both Javascript and Typescript)
-- [x] nodejs14.x (both Javascript and Typescript)
-- [x] nodejs16.x (both Javascript and Typescript)
-- [x] nodejs18.x (both Javascript and Typescript)
 - [x] nodejs20.x (both Javascript and Typescript)
 - [x] nodejs22.x (both Javascript and Typescript)
+- [x] nodejs24.x (both Javascript and Typescript)
 - [ ] dotnetcore2.1
 - [ ] java8
 - [ ] java11
