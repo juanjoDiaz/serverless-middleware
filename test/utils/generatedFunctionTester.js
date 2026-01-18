@@ -1,23 +1,29 @@
 const { transpileModule, ModuleKind } = require('typescript');
 
 class GeneratedFunctionTester {
-  constructor(fn) {
-    this.fn = fn;
-  }
+	constructor(fn) {
+		this.fn = fn;
+	}
 
-  static fromJavaScript(fn) {
-    return new GeneratedFunctionTester(fn);
-  }
+	static fromJavaScript(fn) {
+		return new GeneratedFunctionTester(fn);
+	}
 
-  static fromTypeScript(fn) {
-    return new GeneratedFunctionTester(transpileModule(fn, {
-      compilerOptions: { module: ModuleKind.CommonJS },
-    }).outputText);
-  }
+	static fromTypeScript(fn) {
+		return new GeneratedFunctionTester(
+			transpileModule(fn, {
+				compilerOptions: { module: ModuleKind.CommonJS },
+			}).outputText,
+		);
+	}
 
-  get middlewareFunction() {
-    // eslint-disable-next-line no-new-func
-    return new Function('event', 'context', 'dependencies', `
+	get middlewareFunction() {
+		// eslint-disable-next-line no-new-func
+		return new Function(
+			'event',
+			'context',
+			'dependencies',
+			`
       const require = (dependencyName) => {
         const dependency = dependencies[dependencyName.replace('../', '').replace(/^(.+).js$/, '$1')];
         if (!dependency) {
@@ -30,12 +36,13 @@ class GeneratedFunctionTester {
       const module = { exports };
       ${this.fn}
       return module.exports.handler(event, context);
-    `);
-  }
+    `,
+		);
+	}
 
-  async executeMiddlewareFunction(event, context, dependencies) {
-    await this.middlewareFunction(event, context, dependencies);
-  }
+	async executeMiddlewareFunction(event, context, dependencies) {
+		await this.middlewareFunction(event, context, dependencies);
+	}
 }
 
 module.exports = { GeneratedFunctionTester };

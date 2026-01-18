@@ -20,234 +20,244 @@ const fsAsync = fs.promises;
  * @class Middleware
  * */
 class Middleware {
-  /**
-   * @description Serverless Middleware
-   * @constructor
-   *
-   * @param {!Object} serverless - Serverless object
-   * */
-  constructor(serverless, cliOptions, { log }) {
-    this.serverless = serverless;
-    this.cliOptions = cliOptions;
-    this.log = log;
+	/**
+	 * @description Serverless Middleware
+	 * @constructor
+	 *
+	 * @param {!Object} serverless - Serverless object
+	 * */
+	constructor(serverless, cliOptions, { log }) {
+		this.serverless = serverless;
+		this.cliOptions = cliOptions;
+		this.log = log;
 
-    extendServerlessSchema(this.serverless);
+		extendServerlessSchema(this.serverless);
 
-    this.hooks = {
-      'before:package:createDeploymentArtifacts': this.processHandlers.bind(this),
-      'after:package:createDeploymentArtifacts': this.clearResources.bind(this),
-      'before:deploy:function:packageFunction': this.processHandlers.bind(this),
-      'after:deploy:function:deploy': this.clearResources.bind(this),
-      'before:invoke:local:invoke': this.processHandlers.bind(this),
-      'after:invoke:local:invoke': this.clearResources.bind(this),
-      'before:offline:start:init': this.processHandlers.bind(this),
-      'before:offline:start:end': this.clearResources.bind(this),
-    };
+		this.hooks = {
+			'before:package:createDeploymentArtifacts': this.processHandlers.bind(this),
+			'after:package:createDeploymentArtifacts': this.clearResources.bind(this),
+			'before:deploy:function:packageFunction': this.processHandlers.bind(this),
+			'after:deploy:function:deploy': this.clearResources.bind(this),
+			'before:invoke:local:invoke': this.processHandlers.bind(this),
+			'after:invoke:local:invoke': this.clearResources.bind(this),
+			'before:offline:start:init': this.processHandlers.bind(this),
+			'before:offline:start:end': this.clearResources.bind(this),
+		};
 
-    this.middlewareBuilders = {
-      js: createJSMiddlewareHandler,
-      ts: createTSMiddlewareHandler,
-    };
+		this.middlewareBuilders = {
+			js: createJSMiddlewareHandler,
+			ts: createTSMiddlewareHandler,
+		};
 
-    // Fix for issues in Serverles
-    // https://github.com/serverless/serverless/pull/9307
-    this.serviceDir = this.serverless.serviceDir || this.serverless.config.servicePath || '';
-  }
+		// Fix for issues in Serverles
+		// https://github.com/serverless/serverless/pull/9307
+		this.serviceDir = this.serverless.serviceDir || this.serverless.config.servicePath || '';
+	}
 
-  /**
-   * @description Configure the plugin based on the context of serverless.yml
-   *
-   * @return {Object} - Configuration cliOptions to be used by the plugin
-   * */
-  configPlugin(service) {
-    const defaultOpts = {
-      folderName: '.middleware',
-      cleanFolder: true,
-      pre: [],
-      pos: [],
-    };
+	/**
+	 * @description Configure the plugin based on the context of serverless.yml
+	 *
+	 * @return {Object} - Configuration cliOptions to be used by the plugin
+	 * */
+	configPlugin(service) {
+		const defaultOpts = {
+			folderName: '.middleware',
+			cleanFolder: true,
+			pre: [],
+			pos: [],
+		};
 
-    const config = (service.custom && service.custom.middleware) || {};
-    const folderName = (typeof config.folderName === 'string') ? config.folderName : defaultOpts.folderName;
-    const pathFolder = path.join(this.serviceDir, folderName);
-    const pathToRoot = path.relative(pathFolder, this.serviceDir);
+		const config = service.custom?.middleware || {};
+		const folderName =
+			typeof config.folderName === 'string' ? config.folderName : defaultOpts.folderName;
+		const pathFolder = path.join(this.serviceDir, folderName);
+		const pathToRoot = path.relative(pathFolder, this.serviceDir);
 
-    return {
-      folderName,
-      pathFolder,
-      pathToRoot,
-      cleanFolder: (typeof config.cleanFolder === 'boolean') ? config.cleanFolder : defaultOpts.cleanFolder,
-      pre: Array.isArray(config.pre) ? config.pre : defaultOpts.pre,
-      pos: Array.isArray(config.pos) ? config.pos : defaultOpts.pos,
-    };
-  }
+		return {
+			folderName,
+			pathFolder,
+			pathToRoot,
+			cleanFolder:
+				typeof config.cleanFolder === 'boolean' ? config.cleanFolder : defaultOpts.cleanFolder,
+			pre: Array.isArray(config.pre) ? config.pre : defaultOpts.pre,
+			pos: Array.isArray(config.pos) ? config.pos : defaultOpts.pos,
+		};
+	}
 
-  /**
-   * @description After package initialize hook. Create middleware functions and update the service.
-   *
-   * @fulfil {} — Middleware set
-   * @reject {Error} Middleware error
-   *
-   * @return {Promise}
-   * */
-  async processHandlers() {
-    this.middlewareOpts = this.middlewareOpts || this.configPlugin(this.serverless.service);
+	/**
+	 * @description After package initialize hook. Create middleware functions and update the service.
+	 *
+	 * @fulfil {} — Middleware set
+	 * @reject {Error} Middleware error
+	 *
+	 * @return {Promise}
+	 * */
+	async processHandlers() {
+		this.middlewareOpts = this.middlewareOpts || this.configPlugin(this.serverless.service);
 
-    const fnNames = this.cliOptions.function
-      ? [this.cliOptions.function]
-      : this.serverless.service.getAllFunctions();
+		const fnNames = this.cliOptions.function
+			? [this.cliOptions.function]
+			: this.serverless.service.getAllFunctions();
 
-    const fns = fnNames
-      .map((name) => {
-        const fn = this.serverless.service.getFunction(name);
+		const fns = fnNames
+			.map((name) => {
+				const fn = this.serverless.service.getFunction(name);
 
-        if (fn === undefined) {
-          throw new this.serverless.classes.Error(`Unknown function: ${name}`);
-        }
+				if (fn === undefined) {
+					throw new this.serverless.classes.Error(`Unknown function: ${name}`);
+				}
 
-        return fn;
-      })
-      .filter((fn) => this.middlewareOpts.pre.length
-        || this.middlewareOpts.pos.length
-        || fn.middleware)
-      .map((fn) => {
-        if (!fn.middleware) {
-          return {
-            fn,
-            handlers: fn.handler ? [fn.handler] : [],
-          };
-        }
+				return fn;
+			})
+			.filter(
+				(fn) => this.middlewareOpts.pre.length || this.middlewareOpts.pos.length || fn.middleware,
+			)
+			.map((fn) => {
+				if (!fn.middleware) {
+					return {
+						fn,
+						handlers: fn.handler ? [fn.handler] : [],
+					};
+				}
 
-        if (Array.isArray(fn.middleware)) {
-          if (fn.handler) {
-            throw new this.serverless.classes.Error(`Error in function ${fn.name}. When defining a handler, only the { pre: ..., pos: ...} configuration is allowed.`);
-          }
+				if (Array.isArray(fn.middleware)) {
+					if (fn.handler) {
+						throw new this.serverless.classes.Error(
+							`Error in function ${fn.name}. When defining a handler, only the { pre: ..., pos: ...} configuration is allowed.`,
+						);
+					}
 
-          return {
-            fn,
-            handlers: fn.middleware,
-          };
-        }
+					return {
+						fn,
+						handlers: fn.middleware,
+					};
+				}
 
-        return {
-          fn,
-          handlers: [
-            ...(fn.middleware.pre ? fn.middleware.pre : []),
-            ...(fn.handler ? [fn.handler] : []),
-            ...(fn.middleware.pos ? fn.middleware.pos : []),
-          ],
-        };
-      })
-      .map(({ fn, handlers: rawHandlers }) => {
-        const handlers = this.preProcessFnHandlers(rawHandlers);
-        const extension = this.getLanguageExtension(handlers);
-        return { fn, handlers, extension };
-      });
+				return {
+					fn,
+					handlers: [
+						...(fn.middleware.pre ? fn.middleware.pre : []),
+						...(fn.handler ? [fn.handler] : []),
+						...(fn.middleware.pos ? fn.middleware.pos : []),
+					],
+				};
+			})
+			.map(({ fn, handlers: rawHandlers }) => {
+				const handlers = this.preProcessFnHandlers(rawHandlers);
+				const extension = this.getLanguageExtension(handlers);
+				return { fn, handlers, extension };
+			});
 
-    if (fns.length === 0) return;
+		if (fns.length === 0) return;
 
-    await fsAsync.mkdir(this.middlewareOpts.pathFolder, { recursive: true });
+		await fsAsync.mkdir(this.middlewareOpts.pathFolder, { recursive: true });
 
-    await Promise.all(fns.map(async ({ fn, handlers, extension }) => {
-      this.log.info(`Middleware: setting ${handlers.length} middlewares for function ${fn.name}`);
+		await Promise.all(
+			fns.map(async ({ fn, handlers, extension }) => {
+				this.log.info(`Middleware: setting ${handlers.length} middlewares for function ${fn.name}`);
 
-      const middlewareBuilder = this.middlewareBuilders[extension];
-      const handlerPath = path.join(this.middlewareOpts.pathFolder, `${fn.name}.${extension}`);
-      const handler = middlewareBuilder(handlers, this.middlewareOpts.pathToRoot);
-      await fsAsync.writeFile(handlerPath, handler);
-      // eslint-disable-next-line no-param-reassign
-      fn.handler = `${this.middlewareOpts.folderName}/${fn.name}.handler`;
-    }));
-  }
+				const middlewareBuilder = this.middlewareBuilders[extension];
+				const handlerPath = path.join(this.middlewareOpts.pathFolder, `${fn.name}.${extension}`);
+				const handler = middlewareBuilder(handlers, this.middlewareOpts.pathToRoot);
+				await fsAsync.writeFile(handlerPath, handler);
+				// eslint-disable-next-line no-param-reassign
+				fn.handler = `${this.middlewareOpts.folderName}/${fn.name}.handler`;
+			}),
+		);
+	}
 
-  /**
-   * @description Generate the list of middlewares for a given function.
-   *
-   * @return {Object[]} List of middleware to include for the function
-   * */
-  preProcessFnHandlers(handlers) {
-    return [
-      ...this.middlewareOpts.pre,
-      ...handlers,
-      ...this.middlewareOpts.pos,
-    ].map((handler) => {
-      if (handler.then && handler.catch) {
-        return {
-          then: parseHandler(handler.then),
-          catch: parseHandler(handler.catch),
-        };
-      }
-      if (handler.then) return { then: parseHandler(handler.then) };
-      if (handler.catch) return { catch: parseHandler(handler.catch) };
-      if (typeof handler === 'string') return { then: parseHandler(handler) };
+	/**
+	 * @description Generate the list of middlewares for a given function.
+	 *
+	 * @return {Object[]} List of middleware to include for the function
+	 * */
+	preProcessFnHandlers(handlers) {
+		return [...this.middlewareOpts.pre, ...handlers, ...this.middlewareOpts.pos].map((handler) => {
+			if (handler.then && handler.catch) {
+				return {
+					then: parseHandler(handler.then),
+					catch: parseHandler(handler.catch),
+				};
+			}
+			if (handler.then) return { then: parseHandler(handler.then) };
+			if (handler.catch) return { catch: parseHandler(handler.catch) };
+			if (typeof handler === 'string') return { then: parseHandler(handler) };
 
-      throw new this.serverless.classes.Error(`Invalid handler: ${JSON.stringify(handler)}`);
-    });
-  }
+			throw new this.serverless.classes.Error(`Invalid handler: ${JSON.stringify(handler)}`);
+		});
+	}
 
-  /**
-   * @description Determine the extension to use for the middleware handler.
-   *
-   * @return {string} Extension to use
-   * */
-  getLanguageExtension(handlers) {
-    switch (this.serverless.service.provider.runtime) {
-      case 'nodejs12.x':
-      case 'nodejs14.x':
-      case 'nodejs16.x':
-      case 'nodejs18.x':
-      case 'nodejs20.x':
-      case 'nodejs22.x':
-        return this.getNodeExtension(handlers);
-      // TODO add other runtimes
-      default:
-        throw new this.serverless.classes.Error(`Serverless Middleware doesn't support the "${this.serverless.service.provider.runtime}" runtime`);
-    }
-  }
+	/**
+	 * @description Determine the extension to use for the middleware handler.
+	 *
+	 * @return {string} Extension to use
+	 * */
+	getLanguageExtension(handlers) {
+		switch (this.serverless.service.provider.runtime) {
+			case 'nodejs12.x':
+			case 'nodejs14.x':
+			case 'nodejs16.x':
+			case 'nodejs18.x':
+			case 'nodejs20.x':
+			case 'nodejs22.x':
+				return this.getNodeExtension(handlers);
+			// TODO add other runtimes
+			default:
+				throw new this.serverless.classes.Error(
+					`Serverless Middleware doesn't support the "${this.serverless.service.provider.runtime}" runtime`,
+				);
+		}
+	}
 
-  /**
-   * @description Check the extension of the handlers to find determine
-   * whether they are Javascript or TypeScript.
-   *
-   * @return {string} Extension to use
-   * */
-  getNodeExtension(handlers) {
-    const getNodeType = (handler) => {
-      if (handler === undefined) return false;
+	/**
+	 * @description Check the extension of the handlers to find determine
+	 * whether they are Javascript or TypeScript.
+	 *
+	 * @return {string} Extension to use
+	 * */
+	getNodeExtension(handlers) {
+		const getNodeType = (handler) => {
+			if (handler === undefined) return false;
 
-      const { module } = handler;
+			const { module } = handler;
 
-      if (fs.existsSync(`${module}.js`) || fs.existsSync(`${module}.jsx`)) return 'js';
-      if (fs.existsSync(`${module}.ts`) || fs.existsSync(`${module}.tsx`)) return 'ts';
+			if (fs.existsSync(`${module}.js`) || fs.existsSync(`${module}.jsx`)) return 'js';
+			if (fs.existsSync(`${module}.ts`) || fs.existsSync(`${module}.tsx`)) return 'ts';
 
-      throw new this.serverless.classes.Error(`Unsupported handler extension for module ${module}. Only .js, .jsx, .ts and .tsx are supported.`);
-    };
+			throw new this.serverless.classes.Error(
+				`Unsupported handler extension for module ${module}. Only .js, .jsx, .ts and .tsx are supported.`,
+			);
+		};
 
-    const isTS = handlers.some((handler) => getNodeType(handler.then) === 'ts' || getNodeType(handler.catch) === 'ts');
+		const isTS = handlers.some(
+			(handler) => getNodeType(handler.then) === 'ts' || getNodeType(handler.catch) === 'ts',
+		);
 
-    return isTS ? 'ts' : 'js';
-  }
+		return isTS ? 'ts' : 'js';
+	}
 
-  /**
-   * @description After create deployment artifacts. Clean prefix folder.
-   *
-   * @fulfil {} — Optimization finished
-   * @reject {Error} Optimization error
-   *
-   * @return {Promise}
-   * */
-  async clearResources() {
-    try {
-      this.middlewareOpts = this.middlewareOpts || this.configPlugin(this.serverless.service);
-      if (this.middlewareOpts.cleanFolder) {
-        await fsAsync.rm(this.middlewareOpts.pathFolder, { recursive: true });
-      }
-    } catch (err) {
-      if (err.code !== 'ENOENT') {
-        this.log.error(`Middleware: Couldn't clean up temporary folder ${this.middlewareOpts.cleanFolder}.`);
-      }
-    }
-  }
+	/**
+	 * @description After create deployment artifacts. Clean prefix folder.
+	 *
+	 * @fulfil {} — Optimization finished
+	 * @reject {Error} Optimization error
+	 *
+	 * @return {Promise}
+	 * */
+	async clearResources() {
+		try {
+			this.middlewareOpts = this.middlewareOpts || this.configPlugin(this.serverless.service);
+			if (this.middlewareOpts.cleanFolder) {
+				await fsAsync.rm(this.middlewareOpts.pathFolder, { recursive: true });
+			}
+		} catch (err) {
+			if (err.code !== 'ENOENT') {
+				this.log.error(
+					`Middleware: Couldn't clean up temporary folder ${this.middlewareOpts.cleanFolder}.`,
+				);
+			}
+		}
+	}
 }
 
 module.exports = Middleware;
