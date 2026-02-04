@@ -54,6 +54,26 @@ describe.each(['before:deploy:function:packageFunction', 'before:invoke:local:in
       expect(fsAsync.writeFile).not.toHaveBeenCalled();
     });
 
+    it('should support nodejs24.x runtime', async () => {
+      const serverless = getServerlessConfig({
+        service: {
+          provider: { stage: '', region: '', runtime: 'nodejs24.x' },
+          functions: {
+            someFunc1: {
+              name: 'someFunc1',
+              middleware: [{ then: 'middleware1.handler' }, 'middleware2.handler', 'someFunc1.handler'],
+            },
+          },
+        },
+      });
+      const pluginUtils = getPluginUtils();
+
+      const plugin = new Middleware(serverless, { function: 'someFunc1' }, pluginUtils);
+
+      // Should not throw an error for nodejs24.x
+      await expect(plugin.hooks[hook]()).resolves.not.toThrow();
+    });
+
     it('should error on unsupported node extensions', async () => {
       fs.existsSync.mockImplementation((filePath) => !filePath.startsWith('middleware1'));
       const serverless = getServerlessConfig({

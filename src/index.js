@@ -198,6 +198,7 @@ class Middleware {
       case 'nodejs18.x':
       case 'nodejs20.x':
       case 'nodejs22.x':
+      case 'nodejs24.x':
         return this.getNodeExtension(handlers);
       // TODO add other runtimes
       default:
