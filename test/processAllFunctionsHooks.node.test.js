@@ -2,6 +2,7 @@
 
 jest.mock('fs', () => ({
 	existsSync: jest.fn(),
+	realpathSync: jest.fn(),
 	promises: {
 		mkdir: jest.fn(),
 		writeFile: jest.fn(),
